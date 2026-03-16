@@ -418,6 +418,10 @@
       -webkit-user-select: none;
       user-select: none;
     }
+    .word-main.word-en {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(1.4rem, 6vw, 2rem);
+    }
     .word-main rt {
       font-size: .45em;
       color: var(--dim);
@@ -1300,7 +1304,7 @@ function cardTop() {
     // Audio-only: large speaker, no text
     mainWordHtml = '';
   } else if (isReverse) {
-    mainWordHtml = esc(card.en.join(', '));
+    mainWordHtml = esc(card.en[0].charAt(0).toUpperCase() + card.en[0].slice(1));
   } else {
     mainWordHtml = rubyWord(card.jp, card.kana);
   }
@@ -1332,7 +1336,7 @@ function cardTop() {
       ` : `
         <div class="word-row">
           <button class="btn-speaker" id="btn-speak">${speakerSvg}</button>
-          <div class="word-main" id="word-tap">${mainWordHtml}</div>
+          <div class="word-main${isReverse ? ' word-en' : ''}" id="word-tap">${mainWordHtml}</div>
         </div>
         ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
         <div class="romaji-hint ${hintVis}" id="rom-hint">tap word for romaji</div>` : ''}
