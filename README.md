@@ -13,6 +13,7 @@ A self-contained HTML flashcard app for studying Japanese vocabulary from Duolin
   - JP → EN type answer
   - EN → JP type answer
 - **Forced modes** — lock to multiple choice or type answer if preferred
+- **Adaptive progression** — skills unlock automatically as you master earlier words (see below)
 - **SM-2 inspired spaced repetition** — harder words appear more often
 - **Furigana** — kana readings above kanji via ruby annotations
 - **Romaji** — hidden by default, tap the word to reveal (resets per card)
@@ -42,12 +43,37 @@ npm install
 node enrich_vocab.mjs
 ```
 
+## Progression algorithm
+
+The app uses a strength-based progression system that automatically paces the user through the curriculum.
+
+**Word strength** is computed on the fly from existing history — no new state stored:
+
+```
+strength = (correct / seen) * min(seen, 10) / 10
+```
+
+This ramps from 0 to the word's accuracy over the first 10 exposures. A word answered correctly twice isn't considered "mastered" (strength = 0.2) — it needs consistent accuracy over multiple sessions.
+
+**Current level** is the highest skill index where ALL words have strength >= 0.7. The user advances by getting every word in a skill to 0.7+ strength, and can regress if accuracy drops.
+
+**Session construction** picks 15 cards in priority order:
+1. **Weak words** — seen words with strength < 0.7 (need reinforcement)
+2. **Due words** — words whose spaced repetition interval has expired
+3. **New words** — unseen words from the next skill in sequence
+
+This naturally handles edge cases:
+- **Cold start**: all words are new, session fills from skill 1
+- **Returning after days**: many due words surface, review before new material
+- **Struggling**: weak words keep appearing until mastered, blocking progression
+- **Experienced users**: can toggle "Unlock all skills" in settings for manual control
+
 ## Next steps
 
 - **Smarter distractor selection** — choose wrong answers that are semantically closer or from the same category, rather than just same-skill random picks
 - ~~**Better wrong-answer banner**~~ ✓ — context-aware: skips info already on the card, shows all English meanings
 - ~~**Fuzzy matching for typed answers**~~ ✓ — accepts `o`/`ō`/`ou`/`oo`, Hepburn/Nihon-shiki variants, hyphens, etc.
-- **Improved progress algorithm** — iterate on the SM-2 variant to better model long-term retention and adapt session difficulty
+- ~~**Improved progress algorithm**~~ ✓ — strength-based progression with automatic skill unlocking
 - ~~**Layout**~~ ✓ - the continue button should not move the rest of the content up
 - ~~**Can't listen now**~~ ✓ — tap to skip all audio exercises for the rest of the session
 - **Settings** - rather than keep adding buttons to homepage (reset progress, info etc) we should organizing those in a smarter way that does not overcrowd the homepage.

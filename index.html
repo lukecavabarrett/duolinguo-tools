@@ -1047,6 +1047,38 @@ function playWrongSound() {
 // ══════════════════════════════════════════════════════
 //  DECK & CARD SELECTION (SM-2 inspired)
 // ══════════════════════════════════════════════════════
+// ── Progression Algorithm ──
+// Each word has a "strength" score: (correct / seen) * min(seen, 10) / 10
+// This ramps from 0 to accuracy over the first 10 exposures, preventing
+// a word answered correctly once from being considered "mastered."
+// Strength decays when a word is overdue, reaching 0 at 2x its interval
+// past the due date — so stale words naturally lose strength over time.
+//
+// The user's "level" is the highest skill where ALL words have strength >= 0.7.
+// Sessions prioritize: (1) weak words (strength < 0.7), (2) due words
+// (spaced repetition interval expired), (3) new words from the next skill.
+// This naturally paces the user — they only advance when earlier words are solid,
+// and returning after time away means review before new material.
+function wordStrength(card) {
+  const h = S.history[cardId(card)];
+  if (!h || h.seen === 0) return 0;
+  const accuracy = (h.correct / h.seen) * Math.min(h.seen, 10) / 10;
+  if (h.due && Date.now() > h.due) {
+    const overdueDays = (Date.now() - h.due) / 86400000;
+    return accuracy * Math.max(0, 1 - overdueDays / (h.interval * 2));
+  }
+  return accuracy;
+}
+
+function getCurrentLevel() {
+  for (let i = 0; i < DATA.skills.length; i++) {
+    const words = DATA.words.filter(w => w.skill === DATA.skills[i]);
+    if (!words.length) continue;
+    if (words.some(w => wordStrength(w) < 0.7)) return i - 1;
+  }
+  return DATA.skills.length - 1;
+}
+
 function buildDeck(maxSkillIdx) {
   const activeSkills = DATA.skills.slice(0, maxSkillIdx + 1);
   return DATA.words.filter(w => activeSkills.includes(w.skill));
@@ -1059,24 +1091,40 @@ function buildUnitDeck(skillIdx) {
 
 function selectCards(deck) {
   if (!deck.length) return [];
-  const scored = deck.map(card => {
-    const id = cardId(card);
-    const h = S.history[id] || { seen: 0, correct: 0, interval: 0, ease: 2.5, due: 0 };
-    const now = Date.now();
-    const overdue = h.due ? Math.max(0, (now - h.due) / 86400000) : 10; // days overdue
+  const now = Date.now();
+  const level = S.settings.unlockAll ? DATA.skills.length - 1 : getCurrentLevel();
+  const nextSkill = DATA.skills[level + 1];
 
-    let score = 0;
-    if (h.seen === 0) {
-      score = 100; // unseen cards are high priority
-    } else {
-      const errorRate = (h.seen - h.correct) / h.seen;
-      score = 30 + errorRate * 40 + Math.min(overdue * 5, 30);
-    }
-    score += Math.random() * 6; // jitter
-    return { card, score };
+  // 1. Weak words — seen but not strong enough
+  const weak = deck.filter(card => {
+    const h = S.history[cardId(card)];
+    return h && h.seen > 0 && wordStrength(card) < 0.7;
+  }).sort((a, b) => wordStrength(a) - wordStrength(b));
+
+  // 2. Due words — strong but interval expired
+  const due = deck.filter(card => {
+    const h = S.history[cardId(card)];
+    return h && h.seen > 0 && wordStrength(card) >= 0.7 && now > h.due;
+  }).sort((a, b) => {
+    const ha = S.history[cardId(a)], hb = S.history[cardId(b)];
+    return (ha.due || 0) - (hb.due || 0); // most overdue first
   });
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, Math.min(SESSION_SIZE, deck.length)).map(x => x.card);
+
+  // 3. New words — unseen, from the next skill to learn
+  const newWords = nextSkill
+    ? DATA.words.filter(w => w.skill === nextSkill && !S.history[cardId(w)]?.seen)
+    : [];
+
+  const session = [];
+  const used = new Set();
+  for (const pool of [weak, due, newWords]) {
+    for (const card of pool) {
+      if (session.length >= SESSION_SIZE) break;
+      const id = cardId(card);
+      if (!used.has(id)) { session.push(card); used.add(id); }
+    }
+  }
+  return shuffle(session);
 }
 
 function cardId(card) {
@@ -1155,7 +1203,7 @@ const S = {
   noAudio: false,
   practiceScope: 'all',
   _streak: 0,
-  settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false },
+  settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false, unlockAll: false },
 };
 
 // ══════════════════════════════════════════════════════
@@ -1185,23 +1233,42 @@ function render(partial) {
 
 // ── Profile ──
 function tplProfile() {
-  const deck = buildDeck(S.skillIdx);
-  const skill = DATA.skills[S.skillIdx] || 'Basics';
+  const level = getCurrentLevel();
+  const nextSkill = DATA.skills[level + 1];
+  const deck = S.settings.unlockAll ? buildDeck(S.skillIdx) : buildDeck(level + 1);
 
-  let opts = '';
-  let lastSection = '';
-  DATA.skills.forEach((sk, i) => {
-    // Group by approximate sections (every ~40 skills)
-    const sec = Math.floor(i / 40) + 1;
-    const secLabel = `Section ${sec}`;
-    if (secLabel !== lastSection) {
-      if (lastSection) opts += '</optgroup>';
-      opts += `<optgroup label="${secLabel}">`;
-      lastSection = secLabel;
-    }
-    opts += `<option value="${i}"${i === S.skillIdx ? ' selected' : ''}>${i + 1}. ${esc(sk)}</option>`;
-  });
-  if (lastSection) opts += '</optgroup>';
+  // Dropdown for unlockAll mode
+  let skillSelectHtml = '';
+  if (S.settings.unlockAll) {
+    let opts = '';
+    let lastSection = '';
+    DATA.skills.forEach((sk, i) => {
+      const sec = Math.floor(i / 40) + 1;
+      const secLabel = `Section ${sec}`;
+      if (secLabel !== lastSection) {
+        if (lastSection) opts += '</optgroup>';
+        opts += `<optgroup label="${secLabel}">`;
+        lastSection = secLabel;
+      }
+      opts += `<option value="${i}"${i === S.skillIdx ? ' selected' : ''}>${i + 1}. ${esc(sk)}</option>`;
+    });
+    if (lastSection) opts += '</optgroup>';
+    skillSelectHtml = `<div class="field">
+      <div class="label">Study up to...</div>
+      <select id="skill-select">${opts}</select>
+    </div>`;
+  }
+
+  const levelInfo = S.settings.unlockAll
+    ? ''
+    : `<div class="field">
+        <div class="label">Current level</div>
+        <div class="deck-info">${level < 0
+          ? 'Starting fresh — let\'s learn <strong>' + esc(DATA.skills[0]) + '</strong>!'
+          : 'Mastered through <strong>' + esc(DATA.skills[level]) + '</strong>' +
+            (nextSkill ? ' — next up: <strong>' + esc(nextSkill) + '</strong>' : ' — all skills complete!')
+        }</div>
+      </div>`;
 
   return `<div class="screen anim">
     <button class="btn-gear" id="btn-settings"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="var(--dim)" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.04.31-.06.63-.06.94 0 .31.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></button>
@@ -1217,10 +1284,8 @@ function tplProfile() {
         placeholder="e.g. Luca" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
     </div>
 
-    <div class="field">
-      <div class="label">I've completed up to...</div>
-      <select id="skill-select">${opts}</select>
-    </div>
+    ${levelInfo}
+    ${skillSelectHtml}
 
     <div class="field">
       <div class="label">Exercise mode</div>
@@ -1239,17 +1304,17 @@ function tplProfile() {
       </div>
     </div>
 
-    <div class="field">
+    ${S.settings.unlockAll ? `<div class="field">
       <div class="label">Practice scope</div>
       <div class="mode-toggle">
         <button class="mode-btn${S.practiceScope === 'all' ? ' active' : ''}" data-scope="all">All words</button>
         <button class="mode-btn${S.practiceScope === 'unit' ? ' active' : ''}" data-scope="unit">Unit only</button>
       </div>
       <div class="deck-info" id="scope-info">${S.practiceScope === 'unit'
-        ? `<strong>${buildUnitDeck(S.skillIdx).length}</strong> words in <strong>${esc(skill)}</strong>`
-        : `<strong>${deck.length}</strong> words through <strong>${esc(skill)}</strong>`
+        ? `<strong>${buildUnitDeck(S.skillIdx).length}</strong> words in <strong>${esc(DATA.skills[S.skillIdx])}</strong>`
+        : `<strong>${deck.length}</strong> words through <strong>${esc(DATA.skills[S.skillIdx])}</strong>`
       }</div>
-    </div>
+    </div>` : ''}
 
     <button class="btn btn-green" id="btn-start">START</button>
     <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
@@ -1295,6 +1360,14 @@ function tplSettings() {
       <div class="toggle-row">
         <div><div class="toggle-label">Show romaji by default</div><div class="toggle-sub">${st.showRomaji ? 'Visible on every card' : 'Tap the word to reveal'}</div></div>
         ${tog('showRomaji', st.showRomaji)}
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">Progression</div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Unlock all skills</div><div class="toggle-sub">${st.unlockAll ? 'Manual skill selection enabled' : 'Skills unlock as you learn'}</div></div>
+        ${tog('unlockAll', st.unlockAll)}
       </div>
     </div>
 
@@ -1482,14 +1555,18 @@ function tplSummary() {
 
 // ── Progress ──
 function tplProgress() {
+  const level = getCurrentLevel();
   const rows = DATA.skills.map((skill, i) => {
     const skillWords = DATA.words.filter(w => w.skill === skill);
     if (!skillWords.length) return '';
-    const seen = skillWords.filter(w => S.history[cardId(w)]?.seen > 0).length;
-    const pct = Math.round(seen / skillWords.length * 100);
-    const isActive = i <= S.skillIdx;
-    return `<div class="skill-row" style="${!isActive ? 'opacity:.4' : ''}">
-      <span class="skill-name">${i + 1}. ${esc(skill)}</span>
+    const strong = skillWords.filter(w => wordStrength(w) >= 0.7).length;
+    const pct = Math.round(strong / skillWords.length * 100);
+    const mastered = i <= level;
+    const isNext = i === level + 1;
+    const opacity = mastered || isNext ? '' : 'opacity:.4';
+    const label = mastered ? ' ✓' : '';
+    return `<div class="skill-row" style="${opacity}">
+      <span class="skill-name">${i + 1}. ${esc(skill)}${label}</span>
       <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
       <span class="skill-pct">${pct}%</span>
     </div>`;
@@ -1556,11 +1633,18 @@ function bind() {
     $('btn-start')?.addEventListener('click', () => {
       const v = ($('uname')?.value || '').trim();
       if (v) S.username = v;
-      S.skillIdx = parseInt($('skill-select')?.value || '10', 10);
-      saveState();
-      const fullDeck = buildDeck(S.skillIdx);
-      const practiceDeck = S.practiceScope === 'unit' ? buildUnitDeck(S.skillIdx) : fullDeck;
-      startSession(practiceDeck, fullDeck);
+      if (S.settings.unlockAll) {
+        S.skillIdx = parseInt($('skill-select')?.value || '10', 10);
+        saveState();
+        const fullDeck = buildDeck(S.skillIdx);
+        const practiceDeck = S.practiceScope === 'unit' ? buildUnitDeck(S.skillIdx) : fullDeck;
+        startSession(practiceDeck, fullDeck);
+      } else {
+        saveState();
+        const level = getCurrentLevel();
+        const fullDeck = buildDeck(level + 1);
+        startSession(fullDeck);
+      }
     });
 
     $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
@@ -1577,6 +1661,7 @@ function bind() {
         el.classList.toggle('on', S.settings[key]);
         const sub = el.parentElement.querySelector('.toggle-sub');
         if (key === 'showRomaji' && sub) sub.textContent = S.settings[key] ? 'Visible on every card' : 'Tap the word to reveal';
+        if (key === 'unlockAll' && sub) sub.textContent = S.settings[key] ? 'Manual skill selection enabled' : 'Skills unlock as you learn';
         saveState();
       });
     });
