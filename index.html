@@ -832,18 +832,40 @@
 // ══════════════════════════════════════════════════════
 let DATA = { skills: [], words: [] };
 
+function expandColumnar(parsed) {
+  const c = parsed.columns;
+  const len = c.jp.length;
+  const words = new Array(len);
+  for (let i = 0; i < len; i++) {
+    words[i] = {
+      jp: c.jp[i],
+      kana: c.kana[i],
+      romaji: c.romaji[i],
+      en: c.en[i],
+      audio: c.audio[i] ? parsed.audioPrefix + c.audio[i] : '',
+      skill: parsed.skills[c.skill[i]]
+    };
+  }
+  return { skills: parsed.skills, words };
+}
+
+function parseVocabData(parsed) {
+  if (parsed && parsed.columns) return expandColumnar(parsed);
+  return parsed;
+}
+
 (function loadData() {
   const el = document.getElementById('vocab-data');
   if (el) {
     try {
       const parsed = JSON.parse(el.textContent);
-      if (parsed && parsed.skills) { DATA = parsed; return; }
+      if (parsed && parsed.skills) { DATA = parseVocabData(parsed); return; }
     } catch(e) {}
   }
   // Fallback: try fetching vocab_data.json (works when served, not file://)
   fetch('vocab_data.json')
     .then(r => r.json())
-    .then(d => { DATA = d; render(); })
+    .then(d => { DATA = parseVocabData(d); render(); })
     .catch(() => console.warn('No vocab data found'));
 })();
 
