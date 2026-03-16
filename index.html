@@ -656,7 +656,7 @@
       font-size: .95rem;
       font-weight: 700;
       cursor: pointer;
-      text-align: left;
+      text-align: center;
       transition: border-color .15s, background .15s, transform .1s;
       animation: popIn .25s ease both;
     }
@@ -1407,8 +1407,9 @@ function tplChoices() {
         if (opt === correctAnswer) cls += S.selectedChoice === i ? ' choice-correct' : ' choice-missed';
         else if (i === S.selectedChoice) cls += ' choice-wrong';
       }
+      const display = !isReverse && opt ? opt.charAt(0).toUpperCase() + opt.slice(1) : opt;
       return `<button class="${cls}" data-idx="${i}" ${S.answered ? 'disabled' : ''}>
-        ${esc(opt)}
+        ${esc(display)}
       </button>`;
     }).join('')}
     ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx], S.exerciseType) : ''}
