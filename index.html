@@ -1052,6 +1052,11 @@ function buildDeck(maxSkillIdx) {
   return DATA.words.filter(w => activeSkills.includes(w.skill));
 }
 
+function buildUnitDeck(skillIdx) {
+  const skill = DATA.skills[skillIdx];
+  return DATA.words.filter(w => w.skill === skill);
+}
+
 function selectCards(deck) {
   if (!deck.length) return [];
   const scored = deck.map(card => {
@@ -1148,6 +1153,7 @@ const S = {
   _keyHandler: null,
   _recentTypes: [],
   noAudio: false,
+  practiceScope: 'all',
   _streak: 0,
   settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false },
 };
@@ -1216,10 +1222,6 @@ function tplProfile() {
       <select id="skill-select">${opts}</select>
     </div>
 
-    <div class="deck-info" id="deck-info">
-      <strong>${deck.length}</strong> words through <strong>${esc(skill)}</strong>
-    </div>
-
     <div class="field">
       <div class="label">Exercise mode</div>
       <div class="mode-toggle">
@@ -1235,6 +1237,18 @@ function tplProfile() {
         <button class="dir-btn${S.direction === 'jp2en' ? ' active' : ''}" data-dir="jp2en">JP → EN</button>
         <button class="dir-btn${S.direction === 'en2jp' ? ' active' : ''}" data-dir="en2jp">EN → JP</button>
       </div>
+    </div>
+
+    <div class="field">
+      <div class="label">Practice scope</div>
+      <div class="mode-toggle">
+        <button class="mode-btn${S.practiceScope === 'all' ? ' active' : ''}" data-scope="all">All words</button>
+        <button class="mode-btn${S.practiceScope === 'unit' ? ' active' : ''}" data-scope="unit">Unit only</button>
+      </div>
+      <div class="deck-info" id="scope-info">${S.practiceScope === 'unit'
+        ? `<strong>${buildUnitDeck(S.skillIdx).length}</strong> words in <strong>${esc(skill)}</strong>`
+        : `<strong>${deck.length}</strong> words through <strong>${esc(skill)}</strong>`
+      }</div>
     </div>
 
     <button class="btn btn-green" id="btn-start">START</button>
@@ -1495,19 +1509,40 @@ function bind() {
   const $ = id => document.getElementById(id);
 
   if (S.screen === 'profile') {
+    function updateScopeInfo() {
+      const si = $('scope-info');
+      if (!si) return;
+      const sk = DATA.skills[S.skillIdx] || '';
+      if (S.practiceScope === 'unit') {
+        si.innerHTML = `<strong>${buildUnitDeck(S.skillIdx).length}</strong> words in <strong>${esc(sk)}</strong>`;
+      } else {
+        si.innerHTML = `<strong>${buildDeck(S.skillIdx).length}</strong> words through <strong>${esc(sk)}</strong>`;
+      }
+    }
+
     $('skill-select')?.addEventListener('change', e => {
       S.skillIdx = parseInt(e.target.value, 10);
-      const deck = buildDeck(S.skillIdx);
-      const sk = DATA.skills[S.skillIdx] || '';
-      $('deck-info').innerHTML = `<strong>${deck.length}</strong> words through <strong>${esc(sk)}</strong>`;
+      updateScopeInfo();
     });
 
-    document.querySelectorAll('.mode-btn').forEach(btn => {
+    document.querySelectorAll('[data-scope]').forEach(btn => {
       btn.addEventListener('click', () => {
-        S.exerciseMode = btn.dataset.mode;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.exerciseMode));
-        const dirField = document.getElementById('dir-field');
-        if (dirField) dirField.style.display = S.exerciseMode === 'mixed' ? 'none' : '';
+        S.practiceScope = btn.dataset.scope;
+        document.querySelectorAll('[data-scope]').forEach(b => b.classList.toggle('active', b.dataset.scope === S.practiceScope));
+        updateScopeInfo();
+      });
+    });
+
+    document.querySelectorAll('.mode-btn:not([data-scope])').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.mode) {
+          S.exerciseMode = btn.dataset.mode;
+          document.querySelectorAll('.mode-btn:not([data-scope])').forEach(b => {
+            if (b.dataset.mode) b.classList.toggle('active', b.dataset.mode === S.exerciseMode);
+          });
+          const dirField = document.getElementById('dir-field');
+          if (dirField) dirField.style.display = S.exerciseMode === 'mixed' ? 'none' : '';
+        }
       });
     });
 
@@ -1523,8 +1558,9 @@ function bind() {
       if (v) S.username = v;
       S.skillIdx = parseInt($('skill-select')?.value || '10', 10);
       saveState();
-      S.deck = buildDeck(S.skillIdx);
-      startSession(S.deck);
+      const fullDeck = buildDeck(S.skillIdx);
+      const practiceDeck = S.practiceScope === 'unit' ? buildUnitDeck(S.skillIdx) : fullDeck;
+      startSession(practiceDeck, fullDeck);
     });
 
     $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
@@ -1629,11 +1665,11 @@ function bind() {
   }
 
   if (S.screen === 'summary') {
-    $('btn-again')?.addEventListener('click', () => startSession(S.deck));
+    $('btn-again')?.addEventListener('click', () => startSession(S.practiceDeck, S.deck));
     $('btn-switch')?.addEventListener('click', () => {
       S.exerciseMode = S.exerciseMode === 'choice' ? 'type' : 'choice';
       saveState();
-      startSession(S.deck);
+      startSession(S.practiceDeck, S.deck);
     });
     $('btn-profile')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
   }
@@ -1646,8 +1682,10 @@ function bind() {
 // ══════════════════════════════════════════════════════
 //  ACTIONS
 // ══════════════════════════════════════════════════════
-function startSession(deck) {
+function startSession(deck, distractorPool) {
   if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
+  S.practiceDeck = deck;
+  S.deck = distractorPool || deck;
   S.cards = selectCards(deck);
   S._recentTypes = [];
   S.noAudio = false;
@@ -1660,7 +1698,7 @@ function startSession(deck) {
   S.showRomaji = S.settings.showRomaji;
   S.selectedChoice = null;
   S.exerciseType = pickExerciseType(S.cards[0]);
-  S.choices = S.exerciseType.mode === 'choice' ? buildChoices(S.cards[0], deck, S.exerciseType.direction) : [];
+  S.choices = S.exerciseType.mode === 'choice' ? buildChoices(S.cards[0], S.deck, S.exerciseType.direction) : [];
   S.screen = 'study';
   render();
 }

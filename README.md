@@ -48,7 +48,7 @@ node enrich_vocab.mjs
 - ~~**Better wrong-answer banner**~~ ✓ — context-aware: skips info already on the card, shows all English meanings
 - ~~**Fuzzy matching for typed answers**~~ ✓ — accepts `o`/`ō`/`ou`/`oo`, Hepburn/Nihon-shiki variants, hyphens, etc.
 - **Improved progress algorithm** — iterate on the SM-2 variant to better model long-term retention and adapt session difficulty
-- **Layout** - the continue button should not move the rest of the content up
+- ~~**Layout**~~ ✓ - the continue button should not move the rest of the content up
 - ~~**Can't listen now**~~ ✓ — tap to skip all audio exercises for the rest of the session
 - **Settings** - rather than keep adding buttons to homepage (reset progress, info etc) we should organizing those in a smarter way that does not overcrowd the homepage.
 - **Stories** - This feature is large and for the future. Using https://duome.eu/stories/en/ja to add 2 features: sentences and stories.
