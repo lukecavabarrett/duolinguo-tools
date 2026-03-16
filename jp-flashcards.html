@@ -65,6 +65,24 @@
     @keyframes popIn { from { opacity:0; transform:scale(.9) } to { opacity:1; transform:scale(1) } }
     @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
     @keyframes bounceIn { 0%{transform:scale(0)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+    @keyframes streakPop { 0%{opacity:0;transform:translate(-50%,-50%) scale(.3)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.15)} 100%{transform:translate(-50%,-50%) scale(1)} }
+    @keyframes streakFade { 0%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
+    .streak-banner {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      padding: .75rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 0 #cc9e00, 0 8px 24px rgba(0,0,0,.4);
+      z-index: 100;
+      pointer-events: none;
+      animation: streakPop .4s ease both, streakFade 1.6s ease both;
+    }
     .anim { animation: fadeUp .35s ease both }
     .shake { animation: shake .4s ease }
 
@@ -964,9 +982,11 @@ function fallbackTTS(text) {
 const CORRECT_SOUND_URL = 'https://www.myinstants.com/media/sounds/duolingo-correct.mp3';
 const WRONG_SOUND_URL = 'https://www.myinstants.com/media/sounds/duolingo-wrong.mp3';
 const LESSON_COMPLETE_URL = 'https://www.myinstants.com/media/sounds/duolingo-complete-lesson-sound-effect.mp3';
+const STREAK_SOUND_URL = 'https://www.myinstants.com/media/sounds/duolingo-5-correct-answers.mp3';
 const _correctAudio = new Audio(CORRECT_SOUND_URL);
 const _wrongAudio = new Audio(WRONG_SOUND_URL);
 const _lessonCompleteAudio = new Audio(LESSON_COMPLETE_URL);
+const _streakAudio = new Audio(STREAK_SOUND_URL);
 
 function _fallbackCorrectTone() {
   try {
@@ -1128,6 +1148,7 @@ const S = {
   _keyHandler: null,
   _recentTypes: [],
   noAudio: false,
+  _streak: 0,
   settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false },
 };
 
@@ -1667,8 +1688,14 @@ function recordAnswer(card, ok) {
   h.due = Date.now() + h.interval * 86400000;
   saveState();
 
+  // Streak tracking
+  if (ok) { S._streak++; } else { S._streak = 0; }
+
   // Sound effect
-  if (ok) playCorrectSound(); else playWrongSound();
+  if (ok && S._streak > 0 && S._streak % 5 === 0) {
+    const a = _streakAudio.cloneNode(); a.play().catch(() => {});
+    showStreakBanner(S._streak);
+  } else if (ok) playCorrectSound(); else playWrongSound();
   // Haptic feedback on mobile
   try { navigator.vibrate?.(ok ? 30 : [50, 30, 50]); } catch(e) {}
 }
@@ -1730,6 +1757,14 @@ function skipCard() {
   recordAnswer(card, false);
   render('answer');
   animateCard(false);
+}
+
+function showStreakBanner(count) {
+  const el = document.createElement('div');
+  el.className = 'streak-banner';
+  el.textContent = `🔥 ${count} in a row!`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1700);
 }
 
 function animateCard(ok) {
