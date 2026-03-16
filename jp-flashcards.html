@@ -537,6 +537,19 @@
       text-transform: uppercase;
     }
 
+    .btn-no-audio {
+      margin-top: .75rem;
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-family: 'Nunito', sans-serif;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: .25rem .5rem;
+    }
+
     /* Multiple choice */
     .choices { display: flex; flex-direction: column; gap: .6rem }
     .choice-btn {
@@ -777,8 +790,8 @@ function pickExerciseType(card) {
   let eligible = EXERCISE_TYPES.filter(t => t.difficulty <= maxDiff);
   if (eligible.length === 0) eligible = [EXERCISE_TYPES[0]];
 
-  // Audio type requires card.audio
-  if (!card.audio) eligible = eligible.filter(t => !t.audio);
+  // Audio type requires card.audio; also respect "can't listen now"
+  if (!card.audio || S.noAudio) eligible = eligible.filter(t => !t.audio);
 
   // Avoid repeating same type 3x in a row
   if (S._recentTypes && S._recentTypes.length >= 2) {
@@ -1034,6 +1047,7 @@ const S = {
   selectedChoice: null,
   _keyHandler: null,
   _recentTypes: [],
+  noAudio: false,
 };
 
 // ══════════════════════════════════════════════════════
@@ -1181,6 +1195,7 @@ function cardTop() {
             </div>
           </div>
           <div style="margin-top:.75rem;font-size:.82rem;font-weight:700;color:var(--dim)">What does this mean?</div>
+          ${!S.answered ? '<button class="btn-no-audio" id="btn-no-audio">Can\'t listen now</button>' : ''}
         </div>
       ` : `
         <div class="word-row">
@@ -1379,6 +1394,14 @@ function bind() {
       }
     });
 
+    // "Can't listen now" — skip audio exercises for rest of session
+    $('btn-no-audio')?.addEventListener('click', () => {
+      S.noAudio = true;
+      S.exerciseType = pickExerciseType(S.cards[S.idx]);
+      if (S.exerciseType.mode === 'choice') S.choices = buildChoices(S.cards[S.idx], S.deck, S.exerciseType.direction);
+      render();
+    });
+
     // Auto-play audio for audio-only cards
     if (S.exerciseType.audio && !S.answered) {
       setTimeout(() => playAudio(S.cards[S.idx]), 150);
@@ -1446,6 +1469,7 @@ function startSession(deck) {
   if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
   S.cards = selectCards(deck);
   S._recentTypes = [];
+  S.noAudio = false;
   S.idx = 0;
   S.answered = false;
   S.lastCorrect = null;

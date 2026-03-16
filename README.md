@@ -16,7 +16,8 @@ A self-contained HTML flashcard app for studying Japanese vocabulary from Duolin
 - **SM-2 inspired spaced repetition** — harder words appear more often
 - **Furigana** — kana readings above kanji via ruby annotations
 - **Romaji** — hidden by default, tap the word to reveal (resets per card)
-- **Wrong-answer info banner** — shows full word details on mistakes
+- **Wrong-answer info banner** — context-aware: shows only new info per exercise type
+- **"Can't listen now"** — skip audio exercises for the rest of the session
 - **Duolingo-style UI** — dark theme, green accents, raised buttons, sound effects
 - **Offline-capable** — everything embedded in a single HTML file
 - **Progress saved** in localStorage
@@ -43,8 +44,9 @@ node enrich_vocab.mjs
 ## Next steps
 
 - **Smarter distractor selection** — choose wrong answers that are semantically closer or from the same category, rather than just same-skill random picks
-- **Better wrong-answer banner** — the explanation shown after a wrong answer is too crammed; redesign the layout to be clearer and more readable
+- ~~**Better wrong-answer banner**~~ ✓ — context-aware: skips info already on the card, shows all English meanings
 - **Fuzzy matching for typed answers** — accept minor differences like `o` vs `ō`, `ou` vs `oo`, missing hyphens, etc.
 - **Improved progress algorithm** — iterate on the SM-2 variant to better model long-term retention and adapt session difficulty
 - **Layout** - the continue button should not move the rest of the content up
-- **Reset Progress feature** - to implement
+- ~~**Can't listen now**~~ ✓ — tap to skip all audio exercises for the rest of the session
+- **Settings** - rather than keep adding buttons to homepage (reset progress, info etc) we should organizing those in a smarter way that does not overcrowd the homepage.
