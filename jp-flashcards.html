@@ -447,14 +447,14 @@
       background: var(--red-bg);
       border: 2px solid var(--red);
       border-radius: var(--radius-sm);
-      padding: .85rem 1rem;
-      margin-top: .5rem;
+      padding: 1rem 1.1rem;
+      margin-top: .75rem;
       animation: fadeUp .25s ease;
     }
     .word-info-banner .wib-row {
       display: flex;
       align-items: center;
-      gap: .5rem;
+      gap: .6rem;
     }
     .word-info-banner .wib-jp {
       font-family: 'Noto Sans JP', sans-serif;
@@ -480,16 +480,17 @@
     }
     .word-info-banner .wib-play svg { width: 16px; height: 16px; fill: var(--blue) }
     .word-info-banner .wib-romaji {
-      font-size: .78rem;
+      font-size: .8rem;
       font-weight: 700;
       color: var(--blue);
-      margin-top: .2rem;
+      margin-top: .35rem;
     }
     .word-info-banner .wib-en {
-      font-size: .82rem;
+      font-size: .85rem;
       font-weight: 600;
       color: var(--dim);
-      margin-top: .3rem;
+      margin-top: .4rem;
+      line-height: 1.4;
     }
 
     .btn-check {
@@ -1183,16 +1184,19 @@ function cardTop() {
     </div>`;
 }
 
-function wordInfoBanner(card) {
+function wordInfoBanner(card, exerciseType) {
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
   const jpHtml = hasKanji(card.jp) && card.kana && card.kana !== card.jp
     ? `<ruby>${esc(card.jp)}<rp>(</rp><rt>${esc(card.kana)}</rt><rp>)</rp></ruby>`
     : esc(card.jp);
+  const dir = exerciseType ? exerciseType.direction : null;
+  const isAudio = exerciseType ? exerciseType.audio : false;
+  const showJp = dir !== 'jp2en' || isAudio;
   return `<div class="word-info-banner">
-    <div class="wib-row">
+    ${showJp ? `<div class="wib-row">
       <span class="wib-jp">${jpHtml}</span>
       <button class="wib-play" id="btn-wib-play">${speakerSvg}</button>
-    </div>
+    </div>` : `<div class="wib-row"><button class="wib-play" id="btn-wib-play">${speakerSvg}</button></div>`}
     ${card.romaji ? `<div class="wib-romaji">${esc(card.romaji)}</div>` : ''}
     <div class="wib-en">${esc(card.en.join(', '))}</div>
   </div>`;
@@ -1218,7 +1222,7 @@ function tplType() {
   const fb = S.answered
     ? (S.lastCorrect
       ? `<div class="feedback c">Correct!</div>`
-      : `<div class="feedback w">Incorrect</div>${wordInfoBanner(card)}`)
+      : `<div class="feedback w">Incorrect</div>${wordInfoBanner(card, S.exerciseType)}`)
     : '<div class="feedback"></div>';
 
   const action = S.answered
@@ -1251,7 +1255,7 @@ function tplChoices() {
         <span class="choice-letter">${LETTERS[i]}</span>${esc(opt)}
       </button>`;
     }).join('')}
-    ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx]) : ''}
+    ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx], S.exerciseType) : ''}
     ${S.answered ? `<button class="btn-next" id="btn-next" style="margin-top:.4rem">${S.idx + 1 < S.cards.length ? 'CONTINUE' : 'FINISH'}</button>` : ''}
   </div>`;
 }
