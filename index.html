@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<!--
+  日本語 Flash v2 — Duolingo-style Japanese Flashcards
+  Self-contained HTML app. Works offline on Android Chrome.
+  Data: vocab_data.json embedded at build time, or loaded inline.
+  Audio: Duolingo CDN (d1vq87e9lcf771.cloudfront.net)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#58CC02">
+  <title>日本語 Flash</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    :root {
+      --bg: #131F24;
+      --surface: #1B2B32;
+      --surface2: #233A44;
+      --border: #2B4A56;
+      --fg: #FFFFFF;
+      --dim: #8BA5B0;
+      --green: #58CC02;
+      --green-dark: #4CAD02;
+      --green-bg: rgba(88,204,2,.12);
+      --red: #FF4B4B;
+      --red-bg: rgba(255,75,75,.1);
+      --blue: #1CB0F6;
+      --blue-bg: rgba(28,176,246,.1);
+      --gold: #FFC800;
+      --gold-bg: rgba(255,200,0,.1);
+      --orange: #FF9600;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --shadow: 0 4px 0 rgba(0,0,0,.2);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Nunito', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    #app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+    }
+
+    .screen { width: 100%; max-width: 420px; }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes popIn { from { opacity:0; transform:scale(.9) } to { opacity:1; transform:scale(1) } }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    @keyframes bounceIn { 0%{transform:scale(0)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+    .anim { animation: fadeUp .35s ease both }
+    .shake { animation: shake .4s ease }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: .9rem 1.2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s, transform .1s;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .btn:active { transform: scale(.97) }
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 4px 0 var(--green-dark);
+    }
+    .btn-green:active { box-shadow: 0 2px 0 var(--green-dark); transform: translateY(2px) }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--dim);
+      font-weight: 600;
+      font-size: .9rem;
+    }
+    .btn-outline:active { background: var(--surface2) }
+    .btn-white {
+      background: #fff;
+      color: var(--bg);
+      box-shadow: 0 4px 0 #d4d4d4;
+    }
+
+    /* Inputs */
+    input[type="text"], select {
+      width: 100%;
+      padding: .85rem 1rem;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg);
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input[type="text"]:focus, select:focus { border-color: var(--green) }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238BA5B0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    .label {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: .4rem;
+    }
+    .field { margin-bottom: 1rem }
+    .gap { margin-top: .75rem }
+
+    /* ── Profile Screen ── */
+    .logo-wrap { text-align: center; margin-bottom: 1.5rem }
+    .logo-icon {
+      width: 80px; height: 80px;
+      background: var(--green);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      margin-bottom: .5rem;
+      box-shadow: 0 6px 0 var(--green-dark);
+    }
+    .logo-title {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .logo-sub {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .deck-info {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .75rem 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--dim);
+    }
+    .deck-info strong { color: var(--green) }
+
+    .mode-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 1rem;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: .55rem .5rem;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--dim);
+      font-family: 'Nunito', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .mode-btn.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 2px 0 var(--green-dark);
+    }
+
+    .dir-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 1rem;
+    }
+    .dir-btn {
+      flex: 1;
+      padding: .55rem .5rem;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--dim);
+      font-family: 'Nunito', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .dir-btn.active {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 2px 0 #0e8ec4;
+    }
+
+    .note {
+      margin-top: 1.25rem;
+      font-size: .7rem;
+      font-weight: 600;
+      color: #4a6a76;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    /* ── Study Screen ── */
+    .study-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: .75rem;
+    }
+    .btn-close {
+      width: 36px; height: 36px;
+      background: transparent;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      color: var(--dim);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+    }
+    .btn-close:active { background: var(--surface2) }
+
+    .prog-bar-wrap {
+      flex: 1;
+      height: 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 8px;
+      transition: width .4s ease;
+    }
+    .score-badge {
+      font-size: .78rem;
+      font-weight: 800;
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+    .score-badge .c { color: var(--green) }
+    .score-badge .w { color: var(--red) }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      transition: border-color .25s, background .25s;
+    }
+    .card.correct { border-color: var(--green); background: var(--green-bg) }
+    .card.wrong { border-color: var(--red); background: var(--red-bg) }
+
+    .skill-tag {
+      display: inline-block;
+      padding: .2rem .7rem;
+      background: var(--surface2);
+      border-radius: 20px;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: .75rem;
+    }
+
+    .word-main {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: clamp(2rem, 10vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: .3rem;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .word-main rt {
+      font-size: .45em;
+      color: var(--dim);
+      font-weight: 600;
+    }
+    .word-sub {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--dim);
+      min-height: 1.2rem;
+      margin-bottom: .15rem;
+    }
+    .romaji-line {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--blue);
+      min-height: 1.2rem;
+      transition: opacity .2s, max-height .2s;
+      overflow: hidden;
+    }
+    .romaji-line.hidden { opacity: 0; max-height: 0; margin: 0 }
+    .romaji-line.visible { opacity: 1; max-height: 2rem }
+    .romaji-hint {
+      font-size: .65rem;
+      font-weight: 700;
+      color: #3a5a66;
+      margin-top: .3rem;
+      transition: opacity .2s;
+    }
+    .romaji-hint.gone { opacity: 0 }
+
+    .word-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+    }
+    .btn-speaker {
+      width: 48px;
+      height: 48px;
+      background: var(--blue);
+      border: none;
+      border-bottom: 4px solid #0e8ec4;
+      border-radius: 14px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform .1s, filter .15s;
+      padding: 0;
+    }
+    .btn-speaker svg { width: 24px; height: 24px; fill: #fff }
+    .btn-speaker:active { transform: translateY(2px); border-bottom-width: 2px; filter: brightness(.9) }
+
+    /* Type mode */
+    .answer-area { display: flex; flex-direction: column; gap: .6rem }
+    .answer-input {
+      width: 100%;
+      padding: .85rem 1rem;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .answer-input:focus { border-color: var(--green) }
+    .answer-input.correct { border-color: var(--green); background: var(--green-bg) }
+    .answer-input.wrong { border-color: var(--red); background: var(--red-bg) }
+    .answer-input:disabled { opacity: .7 }
+
+    .feedback {
+      font-size: .85rem;
+      font-weight: 700;
+      min-height: 1.3rem;
+      padding: 0 .2rem;
+    }
+    .feedback.c { color: var(--green) }
+    .feedback.w { color: var(--red) }
+
+    .btn-check {
+      padding: .85rem;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 0 #bbb;
+    }
+    .btn-check:active { box-shadow: 0 2px 0 #bbb; transform: translateY(2px) }
+    .btn-check:disabled { opacity: .5; cursor: default }
+
+    .btn-next {
+      padding: .85rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 0 var(--green-dark);
+    }
+    .btn-next:active { box-shadow: 0 2px 0 var(--green-dark); transform: translateY(2px) }
+    .btn-skip {
+      padding: .65rem;
+      background: transparent;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--dim);
+      font-family: 'Nunito', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    /* Multiple choice */
+    .choices { display: flex; flex-direction: column; gap: .6rem }
+    .choice-btn {
+      width: 100%;
+      padding: .85rem 1rem;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg);
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .15s, background .15s, transform .1s;
+      animation: popIn .25s ease both;
+    }
+    .choice-btn:nth-child(1){animation-delay:.03s}
+    .choice-btn:nth-child(2){animation-delay:.06s}
+    .choice-btn:nth-child(3){animation-delay:.09s}
+    .choice-btn:nth-child(4){animation-delay:.12s}
+    .choice-btn:not([disabled]):active { transform: scale(.98) }
+    .choice-btn:not([disabled]):hover { border-color: var(--blue) }
+    .choice-btn[disabled] { cursor: default }
+    .choice-btn.choice-correct {
+      border-color: var(--green);
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    .choice-btn.choice-wrong {
+      border-color: var(--red);
+      background: var(--red-bg);
+      color: var(--red);
+      opacity: .8;
+    }
+    .choice-btn.choice-missed {
+      border-color: var(--green);
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    .choice-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 6px;
+      background: var(--surface2);
+      font-size: .72rem;
+      font-weight: 800;
+      margin-right: .7rem;
+      vertical-align: middle;
+      transition: background .15s, color .15s;
+    }
+    .choice-btn.choice-correct .choice-letter { background: var(--green); color: #fff }
+    .choice-btn.choice-wrong .choice-letter { background: var(--red); color: #fff }
+    .choice-btn.choice-missed .choice-letter { background: var(--green); color: #fff }
+
+    /* ── Summary Screen ── */
+    .sum-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto .75rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      animation: bounceIn .5s ease;
+    }
+    .sum-icon.great { background: var(--gold-bg) }
+    .sum-icon.good { background: var(--green-bg) }
+    .sum-icon.keep { background: var(--blue-bg) }
+
+    .sum-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: .2rem;
+    }
+    .sum-sub {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--dim);
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .sum-pct {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--green);
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .sum-pct span { font-size: 1.1rem; color: var(--dim) }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem;
+      margin-bottom: 1.25rem;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .85rem;
+      text-align: center;
+    }
+    .stat-box .v { font-size: 1.6rem; font-weight: 800; margin-bottom: .1rem }
+    .stat-box .l { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--dim) }
+    .stat-box.c .v { color: var(--green) }
+    .stat-box.w .v { color: var(--red) }
+
+    .sum-note {
+      font-size: .72rem;
+      font-weight: 600;
+      color: #4a6a76;
+      text-align: center;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    /* ── Progress Screen ── */
+    .prog-screen-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .prog-back {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--blue);
+      cursor: pointer;
+      margin-bottom: 1rem;
+      background: none;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+    }
+    .skill-list { display: flex; flex-direction: column; gap: .5rem; max-height: 65vh; overflow-y: auto; padding-right: .25rem }
+    .skill-row {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .6rem .75rem;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .skill-name { flex: 1; font-size: .82rem; font-weight: 700 }
+    .skill-bar-wrap {
+      width: 80px;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .skill-bar-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 4px;
+    }
+    .skill-pct { font-size: .72rem; font-weight: 800; color: var(--dim); width: 2.5rem; text-align: right }
+
+    /* Scrollbar */
+    .skill-list::-webkit-scrollbar { width: 4px }
+    .skill-list::-webkit-scrollbar-track { background: transparent }
+    .skill-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Vocabulary data will be embedded here -->
+<script id="vocab-data" type="application/json">VOCAB_DATA_PLACEHOLDER</script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA LOADING
+// ══════════════════════════════════════════════════════
+let DATA = { skills: [], words: [] };
+
+(function loadData() {
+  const el = document.getElementById('vocab-data');
+  if (el) {
+    try {
+      const parsed = JSON.parse(el.textContent);
+      if (parsed && parsed.skills) { DATA = parsed; return; }
+    } catch(e) {}
+  }
+  // Fallback: try fetching vocab_data.json (works when served, not file://)
+  fetch('vocab_data.json')
+    .then(r => r.json())
+    .then(d => { DATA = d; render(); })
+    .catch(() => console.warn('No vocab data found'));
+})();
+
+const SESSION_SIZE = 15;
+const LETTERS = ['A','B','C','D'];
+
+// ══════════════════════════════════════════════════════
+//  LOCAL STORAGE
+// ══════════════════════════════════════════════════════
+const LS = {
+  get(k) { try { return localStorage.getItem(k) } catch(e) { return null } },
+  set(k,v) { try { localStorage.setItem(k,v) } catch(e) {} },
+};
+
+function loadSaved() {
+  S.username = LS.get('jf_username') || '';
+  S.mode = LS.get('jf_mode') || 'choice';
+  S.direction = LS.get('jf_direction') || 'jp2en';
+  S.skillIdx = parseInt(LS.get('jf_skillIdx') || '10', 10);
+  try { S.history = JSON.parse(LS.get('jf_history') || '{}'); } catch(e) { S.history = {}; }
+}
+
+function saveState() {
+  LS.set('jf_username', S.username);
+  LS.set('jf_mode', S.mode);
+  LS.set('jf_direction', S.direction);
+  LS.set('jf_skillIdx', String(S.skillIdx));
+  LS.set('jf_history', JSON.stringify(S.history));
+}
+
+// ══════════════════════════════════════════════════════
+//  AUDIO
+// ══════════════════════════════════════════════════════
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function playAudio(word) {
+  if (word.audio) {
+    const a = new Audio(word.audio);
+    a.play().catch(() => fallbackTTS(word.jp));
+  } else {
+    fallbackTTS(word.jp);
+  }
+}
+
+function fallbackTTS(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ja-JP';
+  u.rate = 0.85;
+  speechSynthesis.speak(u);
+}
+
+function playCorrectSound() {
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    // Duolingo-style bright ascending "da-ding!"
+    const notes = [587.33, 784]; // D5 → G5
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = t + i * 0.12;
+      // Main tone + soft overtone for warmth
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2;
+      const mix = ctx.createGain();
+      mix.gain.value = 0.15; // overtone quieter
+      osc2.connect(mix);
+      mix.connect(gain);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.22, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+      osc.start(start);
+      osc.stop(start + 0.3);
+      osc2.start(start);
+      osc2.stop(start + 0.3);
+    });
+  } catch(e) {}
+}
+
+function playWrongSound() {
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    // Duolingo-style soft low "bwop" — two detuned sines for thickness
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(280, t);
+    osc.frequency.exponentialRampToValueAtTime(200, t + 0.15);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(276, t); // slightly detuned
+    osc2.frequency.exponentialRampToValueAtTime(196, t + 0.15);
+    osc.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.18, t + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    osc.start(t);
+    osc.stop(t + 0.22);
+    osc2.start(t);
+    osc2.stop(t + 0.22);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════
+//  DECK & CARD SELECTION (SM-2 inspired)
+// ══════════════════════════════════════════════════════
+function buildDeck(maxSkillIdx) {
+  const activeSkills = DATA.skills.slice(0, maxSkillIdx + 1);
+  return DATA.words.filter(w => activeSkills.includes(w.skill));
+}
+
+function selectCards(deck) {
+  if (!deck.length) return [];
+  const scored = deck.map(card => {
+    const id = cardId(card);
+    const h = S.history[id] || { seen: 0, correct: 0, interval: 0, ease: 2.5, due: 0 };
+    const now = Date.now();
+    const overdue = h.due ? Math.max(0, (now - h.due) / 86400000) : 10; // days overdue
+
+    let score = 0;
+    if (h.seen === 0) {
+      score = 100; // unseen cards are high priority
+    } else {
+      const errorRate = (h.seen - h.correct) / h.seen;
+      score = 30 + errorRate * 40 + Math.min(overdue * 5, 30);
+    }
+    score += Math.random() * 6; // jitter
+    return { card, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, Math.min(SESSION_SIZE, deck.length)).map(x => x.card);
+}
+
+function cardId(card) {
+  return card.jp + '|' + card.skill;
+}
+
+function buildChoices(correct, deck, direction) {
+  const pool = [...deck.filter(c => cardId(c) !== cardId(correct))];
+  // Shuffle pool
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  let correctAnswer, getAnswer;
+  if (direction === 'jp2en') {
+    correctAnswer = correct.en[0];
+    getAnswer = c => c.en[0];
+  } else {
+    correctAnswer = correct.jp;
+    getAnswer = c => c.jp;
+  }
+
+  const distractors = pool.slice(0, 3).map(getAnswer);
+  const all = [correctAnswer, ...distractors];
+  // Shuffle answers
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  return all;
+}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+const S = {
+  screen: 'profile',
+  username: '',
+  mode: 'choice',
+  direction: 'jp2en',
+  skillIdx: 10,
+  deck: [],
+  cards: [],
+  idx: 0,
+  showRomaji: false,
+  answered: false,
+  lastCorrect: null,
+  currentAnswer: '',
+  correctCount: 0,
+  wrongCount: 0,
+  history: {},
+  choices: [],
+  selectedChoice: null,
+  _keyHandler: null,
+};
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function render() {
+  const app = document.getElementById('app');
+  switch (S.screen) {
+    case 'profile':  app.innerHTML = tplProfile(); break;
+    case 'study':    app.innerHTML = tplStudy(); break;
+    case 'summary':  app.innerHTML = tplSummary(); break;
+    case 'progress': app.innerHTML = tplProgress(); break;
+  }
+  bind();
+}
+
+// ── Profile ──
+function tplProfile() {
+  const deck = buildDeck(S.skillIdx);
+  const skill = DATA.skills[S.skillIdx] || 'Basics';
+
+  let opts = '';
+  let lastSection = '';
+  DATA.skills.forEach((sk, i) => {
+    // Group by approximate sections (every ~40 skills)
+    const sec = Math.floor(i / 40) + 1;
+    const secLabel = `Section ${sec}`;
+    if (secLabel !== lastSection) {
+      if (lastSection) opts += '</optgroup>';
+      opts += `<optgroup label="${secLabel}">`;
+      lastSection = secLabel;
+    }
+    opts += `<option value="${i}"${i === S.skillIdx ? ' selected' : ''}>${i + 1}. ${esc(sk)}</option>`;
+  });
+  if (lastSection) opts += '</optgroup>';
+
+  return `<div class="screen anim">
+    <div class="logo-wrap">
+      <div class="logo-icon">🇯🇵</div>
+      <div class="logo-title">日本語</div>
+      <div class="logo-sub">Duolingo Flashcards</div>
+    </div>
+
+    <div class="field">
+      <div class="label">Your name</div>
+      <input type="text" id="uname" value="${esc(S.username)}"
+        placeholder="e.g. Luca" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
+    </div>
+
+    <div class="field">
+      <div class="label">I've completed up to...</div>
+      <select id="skill-select">${opts}</select>
+    </div>
+
+    <div class="deck-info" id="deck-info">
+      <strong>${deck.length}</strong> words through <strong>${esc(skill)}</strong>
+    </div>
+
+    <div class="field">
+      <div class="label">Mode</div>
+      <div class="mode-toggle">
+        <button class="mode-btn${S.mode === 'type' ? ' active' : ''}" data-mode="type">Type answer</button>
+        <button class="mode-btn${S.mode === 'choice' ? ' active' : ''}" data-mode="choice">Multiple choice</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">Direction</div>
+      <div class="dir-toggle">
+        <button class="dir-btn${S.direction === 'jp2en' ? ' active' : ''}" data-dir="jp2en">JP → EN</button>
+        <button class="dir-btn${S.direction === 'en2jp' ? ' active' : ''}" data-dir="en2jp">EN → JP</button>
+      </div>
+    </div>
+
+    <button class="btn btn-green" id="btn-start">START</button>
+    <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
+    <p class="note">Progress saved locally on this device.</p>
+  </div>`;
+}
+
+// ── Study ──
+function hasKanji(s) {
+  return /[\u4e00-\u9fff]/.test(s);
+}
+
+function rubyWord(jp, kana) {
+  // If word has kanji and kana differs, wrap in ruby annotation
+  if (hasKanji(jp) && kana && kana !== jp) {
+    return `<ruby>${esc(jp)}<rp>(</rp><rt>${esc(kana)}</rt><rp>)</rp></ruby>`;
+  }
+  return esc(jp);
+}
+
+function cardTop() {
+  const card = S.cards[S.idx];
+  const pct = (S.idx / Math.max(S.cards.length, 1)) * 100;
+  const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
+  const isReverse = S.direction === 'en2jp';
+
+  let mainWordHtml;
+  if (isReverse) {
+    mainWordHtml = esc(card.en.join(', '));
+  } else {
+    mainWordHtml = rubyWord(card.jp, card.kana);
+  }
+
+  const romajiVis = S.showRomaji ? 'visible' : 'hidden';
+  const hintVis = S.showRomaji ? 'gone' : '';
+
+  return `
+    <div class="study-header">
+      <button class="btn-close" id="btn-quit">✕</button>
+      <div class="prog-bar-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
+    </div>
+    <div class="${cardCls}" id="flashcard">
+      <div class="word-row">
+        <button class="btn-speaker" id="btn-speak"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+        <div class="word-main" id="word-tap">${mainWordHtml}</div>
+      </div>
+      ${!isReverse && card.romaji ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
+      <div class="romaji-hint ${hintVis}" id="rom-hint">tap word for romaji</div>` : ''}
+    </div>`;
+}
+
+function tplStudy() {
+  return `<div class="screen anim">${cardTop()}${S.mode === 'choice' ? tplChoices() : tplType()}</div>`;
+}
+
+function tplType() {
+  const card = S.cards[S.idx];
+  const isReverse = S.direction === 'en2jp';
+  const placeholder = isReverse ? 'Type the Japanese (romaji or kana)...' : 'Type the English meaning...';
+  const inpCls = 'answer-input' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
+
+  let correctDisplay;
+  if (isReverse) {
+    correctDisplay = `${card.jp} (${card.romaji})`;
+  } else {
+    correctDisplay = card.en[0];
+  }
+
+  const fb = S.answered
+    ? (S.lastCorrect
+      ? `<div class="feedback c">Correct!</div>`
+      : `<div class="feedback w">Answer: ${esc(correctDisplay)}</div>`)
+    : '<div class="feedback"></div>';
+
+  const action = S.answered
+    ? `<button class="btn-next" id="btn-next">${S.idx + 1 < S.cards.length ? 'CONTINUE' : 'FINISH'}</button>`
+    : `<button class="btn-check" id="btn-check"${!S.currentAnswer ? ' disabled' : ''}>CHECK</button>
+       <button class="btn-skip" id="btn-skip">SKIP</button>`;
+
+  return `<div class="answer-area">
+    <input class="${inpCls}" type="text" id="ans"
+      placeholder="${placeholder}" value="${esc(S.currentAnswer)}"
+      ${S.answered ? 'disabled' : ''}
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    ${fb}${action}
+  </div>`;
+}
+
+function tplChoices() {
+  const card = S.cards[S.idx];
+  const isReverse = S.direction === 'en2jp';
+  const correctAnswer = isReverse ? card.jp : card.en[0];
+
+  return `<div class="choices">
+    ${S.choices.map((opt, i) => {
+      let cls = 'choice-btn';
+      if (S.answered) {
+        if (opt === correctAnswer) cls += S.selectedChoice === i ? ' choice-correct' : ' choice-missed';
+        else if (i === S.selectedChoice) cls += ' choice-wrong';
+      }
+      return `<button class="${cls}" data-idx="${i}" ${S.answered ? 'disabled' : ''}>
+        <span class="choice-letter">${LETTERS[i]}</span>${esc(opt)}
+      </button>`;
+    }).join('')}
+    ${S.answered ? `<button class="btn-next" id="btn-next" style="margin-top:.4rem">${S.idx + 1 < S.cards.length ? 'CONTINUE' : 'FINISH'}</button>` : ''}
+  </div>`;
+}
+
+// ── Summary ──
+function tplSummary() {
+  const total = S.correctCount + S.wrongCount;
+  const pct = total ? Math.round(S.correctCount / total * 100) : 0;
+  const iconClass = pct >= 80 ? 'great' : pct >= 55 ? 'good' : 'keep';
+  const emoji = pct >= 80 ? '🏆' : pct >= 55 ? '👏' : '💪';
+  const title = pct >= 80 ? 'Amazing!' : pct >= 55 ? 'Good work!' : 'Keep practicing!';
+
+  return `<div class="screen anim">
+    <div class="sum-icon ${iconClass}">${emoji}</div>
+    <div class="sum-title">${title}</div>
+    <div class="sum-sub">${esc(S.username || 'Learner')} · ${S.direction === 'jp2en' ? 'JP→EN' : 'EN→JP'}</div>
+    <div class="sum-pct">${pct}<span>%</span></div>
+    <div class="stat-grid">
+      <div class="stat-box c"><div class="v">${S.correctCount}</div><div class="l">Correct</div></div>
+      <div class="stat-box w"><div class="v">${S.wrongCount}</div><div class="l">Wrong</div></div>
+    </div>
+    <div class="sum-note">Harder words will appear more often next time.</div>
+    <button class="btn btn-green" id="btn-again">NEW SESSION</button>
+    <button class="btn btn-outline gap" id="btn-switch">Switch to ${S.mode === 'choice' ? 'Type answer' : 'Multiple choice'}</button>
+    <button class="btn btn-outline gap" id="btn-profile">Change settings</button>
+  </div>`;
+}
+
+// ── Progress ──
+function tplProgress() {
+  const rows = DATA.skills.map((skill, i) => {
+    const skillWords = DATA.words.filter(w => w.skill === skill);
+    if (!skillWords.length) return '';
+    const seen = skillWords.filter(w => S.history[cardId(w)]?.seen > 0).length;
+    const pct = Math.round(seen / skillWords.length * 100);
+    const isActive = i <= S.skillIdx;
+    return `<div class="skill-row" style="${!isActive ? 'opacity:.4' : ''}">
+      <span class="skill-name">${i + 1}. ${esc(skill)}</span>
+      <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
+      <span class="skill-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="screen anim">
+    <button class="prog-back" id="btn-prog-back">← Back</button>
+    <div class="prog-screen-title">Progress by Skill</div>
+    <div class="skill-list">${rows}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  BIND
+// ══════════════════════════════════════════════════════
+function bind() {
+  const $ = id => document.getElementById(id);
+
+  if (S.screen === 'profile') {
+    $('skill-select')?.addEventListener('change', e => {
+      S.skillIdx = parseInt(e.target.value, 10);
+      const deck = buildDeck(S.skillIdx);
+      const sk = DATA.skills[S.skillIdx] || '';
+      $('deck-info').innerHTML = `<strong>${deck.length}</strong> words through <strong>${esc(sk)}</strong>`;
+    });
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        S.mode = btn.dataset.mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode));
+      });
+    });
+
+    document.querySelectorAll('.dir-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        S.direction = btn.dataset.dir;
+        document.querySelectorAll('.dir-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === S.direction));
+      });
+    });
+
+    $('btn-start')?.addEventListener('click', () => {
+      const v = ($('uname')?.value || '').trim();
+      if (v) S.username = v;
+      S.skillIdx = parseInt($('skill-select')?.value || '10', 10);
+      saveState();
+      S.deck = buildDeck(S.skillIdx);
+      startSession(S.deck);
+    });
+
+    $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
+  }
+
+  if (S.screen === 'study') {
+    const ans = $('ans');
+    $('btn-quit')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+    $('btn-speak')?.addEventListener('click', () => playAudio(S.cards[S.idx]));
+    $('word-tap')?.addEventListener('click', () => {
+      if (!S.showRomaji) {
+        S.showRomaji = true;
+        $('rom')?.classList.remove('hidden');
+        $('rom')?.classList.add('visible');
+        $('rom-hint')?.classList.add('gone');
+      }
+    });
+
+    if (S.mode === 'type') {
+      if (!S.answered) {
+        $('btn-check')?.addEventListener('click', submitType);
+        $('btn-skip')?.addEventListener('click', skipCard);
+        ans?.addEventListener('keydown', e => { if (e.key === 'Enter' && S.currentAnswer) submitType(); });
+        ans?.addEventListener('input', e => {
+          S.currentAnswer = e.target.value;
+          const btn = $('btn-check');
+          if (btn) btn.disabled = !e.target.value.trim();
+        });
+        setTimeout(() => ans?.focus(), 80);
+      } else {
+        $('btn-next')?.addEventListener('click', next);
+        document.addEventListener('keydown', function onE(e) {
+          if (e.key === 'Enter') { document.removeEventListener('keydown', onE); next(); }
+        });
+      }
+    }
+
+    if (S.mode === 'choice') {
+      if (!S.answered) {
+        document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+          btn.addEventListener('click', () => submitChoice(i));
+        });
+        S._keyHandler = e => {
+          const map = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
+          const idx = map[e.key.toLowerCase()];
+          if (idx !== undefined && !S.answered) submitChoice(idx);
+        };
+        document.addEventListener('keydown', S._keyHandler);
+      } else {
+        if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
+        $('btn-next')?.addEventListener('click', next);
+        document.addEventListener('keydown', function onE(e) {
+          if (e.key === 'Enter') { document.removeEventListener('keydown', onE); next(); }
+        });
+      }
+    }
+  }
+
+  if (S.screen === 'summary') {
+    $('btn-again')?.addEventListener('click', () => startSession(S.deck));
+    $('btn-switch')?.addEventListener('click', () => {
+      S.mode = S.mode === 'choice' ? 'type' : 'choice';
+      saveState();
+      startSession(S.deck);
+    });
+    $('btn-profile')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+  }
+
+  if (S.screen === 'progress') {
+    $('btn-prog-back')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════════════════════
+function startSession(deck) {
+  if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
+  S.cards = selectCards(deck);
+  S.idx = 0;
+  S.answered = false;
+  S.lastCorrect = null;
+  S.currentAnswer = '';
+  S.correctCount = 0;
+  S.wrongCount = 0;
+  S.showRomaji = false;
+  S.selectedChoice = null;
+  S.choices = S.mode === 'choice' ? buildChoices(S.cards[0], deck, S.direction) : [];
+  S.screen = 'study';
+  render();
+}
+
+function recordAnswer(card, ok) {
+  S.answered = true;
+  S.lastCorrect = ok;
+  const id = cardId(card);
+  if (!S.history[id]) S.history[id] = { seen: 0, correct: 0, interval: 1, ease: 2.5, due: 0 };
+  const h = S.history[id];
+  h.seen++;
+
+  if (ok) {
+    S.correctCount++;
+    h.correct++;
+    // SM-2 inspired: increase interval
+    h.interval = Math.min(h.interval * h.ease, 365);
+    h.ease = Math.min(h.ease + 0.1, 3.0);
+  } else {
+    S.wrongCount++;
+    // Reset interval on failure
+    h.interval = 1;
+    h.ease = Math.max(h.ease - 0.2, 1.3);
+  }
+  h.due = Date.now() + h.interval * 86400000;
+  saveState();
+
+  // Sound effect
+  if (ok) playCorrectSound(); else playWrongSound();
+  // Haptic feedback on mobile
+  try { navigator.vibrate?.(ok ? 30 : [50, 30, 50]); } catch(e) {}
+}
+
+function submitType() {
+  const el = document.getElementById('ans');
+  if (!el || S.answered) return;
+  const card = S.cards[S.idx];
+  const norm = s => s.trim().toLowerCase().replace(/^to /, '').replace(/['']/g, "'");
+  const isReverse = S.direction === 'en2jp';
+
+  let ok;
+  if (isReverse) {
+    // Accept romaji or kana
+    const input = norm(el.value);
+    ok = input === norm(card.romaji) || input === card.jp || input === (card.kana || '');
+  } else {
+    ok = !!el.value.trim() && card.en.some(a => norm(a) === norm(el.value));
+  }
+
+  S.currentAnswer = el.value;
+  recordAnswer(card, ok);
+  render();
+  animateCard(ok);
+}
+
+function submitChoice(i) {
+  if (S.answered) return;
+  const card = S.cards[S.idx];
+  const isReverse = S.direction === 'en2jp';
+  const correctAnswer = isReverse ? card.jp : card.en[0];
+  S.selectedChoice = i;
+  recordAnswer(card, S.choices[i] === correctAnswer);
+  render();
+  animateCard(S.lastCorrect);
+}
+
+function skipCard() {
+  const card = S.cards[S.idx];
+  S.currentAnswer = '';
+  recordAnswer(card, false);
+  render();
+  animateCard(false);
+}
+
+function animateCard(ok) {
+  const fc = document.getElementById('flashcard');
+  if (!fc) return;
+  if (!ok) fc.classList.add('shake');
+}
+
+function next() {
+  if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
+  S.idx++;
+  S.answered = false;
+  S.lastCorrect = null;
+  S.currentAnswer = '';
+  S.selectedChoice = null;
+  S.showRomaji = false;
+  if (S.idx >= S.cards.length) { S.screen = 'summary'; render(); return; }
+  if (S.mode === 'choice') S.choices = buildChoices(S.cards[S.idx], S.deck, S.direction);
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+loadSaved();
+render();
+</script>
+</body>
+</html>
