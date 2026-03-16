@@ -590,24 +590,6 @@
       background: var(--green-bg);
       color: var(--green);
     }
-    .choice-letter {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.5rem;
-      height: 1.5rem;
-      border-radius: 6px;
-      background: var(--surface2);
-      font-size: .72rem;
-      font-weight: 800;
-      margin-right: .7rem;
-      vertical-align: middle;
-      transition: background .15s, color .15s;
-    }
-    .choice-btn.choice-correct .choice-letter { background: var(--green); color: #fff }
-    .choice-btn.choice-wrong .choice-letter { background: var(--red); color: #fff }
-    .choice-btn.choice-missed .choice-letter { background: var(--green); color: #fff }
-
     /* ── Summary Screen ── */
     .sum-icon {
       width: 80px;
@@ -751,7 +733,6 @@ let DATA = { skills: [], words: [] };
 })();
 
 const SESSION_SIZE = 15;
-const LETTERS = ['A','B','C','D'];
 
 // ══════════════════════════════════════════════════════
 //  EXERCISE TYPES
@@ -1276,7 +1257,7 @@ function tplChoices() {
         else if (i === S.selectedChoice) cls += ' choice-wrong';
       }
       return `<button class="${cls}" data-idx="${i}" ${S.answered ? 'disabled' : ''}>
-        <span class="choice-letter">${LETTERS[i]}</span>${esc(opt)}
+        ${esc(opt)}
       </button>`;
     }).join('')}
     ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx], S.exerciseType) : ''}
@@ -1513,20 +1494,37 @@ function recordAnswer(card, ok) {
   try { navigator.vibrate?.(ok ? 30 : [50, 30, 50]); } catch(e) {}
 }
 
+function fuzzyNorm(s) {
+  let r = s.trim().toLowerCase().replace(/['']/g, "'").replace(/[-\s]+/g, '');
+  // Macron vowels → doubled/common
+  r = r.replace(/ā/g,'aa').replace(/ī/g,'ii').replace(/ū/g,'uu').replace(/ē/g,'ee').replace(/ō/g,'ou');
+  // Hepburn → Nihon-shiki common form (normalize to Hepburn)
+  r = r.replace(/sya/g,'sha').replace(/syu/g,'shu').replace(/syo/g,'sho');
+  r = r.replace(/tya/g,'cha').replace(/tyu/g,'chu').replace(/tyo/g,'cho');
+  r = r.replace(/zya/g,'ja').replace(/zyu/g,'ju').replace(/zyo/g,'jo');
+  r = r.replace(/\bsi\b|si(?=[aeiou])/g,'shi').replace(/\bti\b|ti(?=[aeiou])/g,'chi');
+  r = r.replace(/\btu\b|tu(?=[aeiou])/g,'tsu').replace(/\bhu\b|hu(?=[aeiou])/g,'fu');
+  r = r.replace(/\bzi\b|zi(?=[aeiou])/g,'ji');
+  // Normalize long-o: oo → ou
+  r = r.replace(/oo/g, 'ou');
+  return r;
+}
+
 function submitType() {
   const el = document.getElementById('ans');
   if (!el || S.answered) return;
   const card = S.cards[S.idx];
-  const norm = s => s.trim().toLowerCase().replace(/^to /, '').replace(/['']/g, "'");
+  const basicNorm = s => s.trim().toLowerCase().replace(/^to /, '').replace(/['']/g, "'");
   const isReverse = S.exerciseType.direction === 'en2jp';
 
   let ok;
   if (isReverse) {
-    // Accept romaji or kana
-    const input = norm(el.value);
-    ok = input === norm(card.romaji) || input === card.jp || input === (card.kana || '');
+    // Accept romaji or kana (fuzzy romaji matching)
+    const input = fuzzyNorm(el.value);
+    ok = input === fuzzyNorm(card.romaji || '') || el.value.trim() === card.jp || el.value.trim() === (card.kana || '');
   } else {
-    ok = !!el.value.trim() && card.en.some(a => norm(a) === norm(el.value));
+    const input = fuzzyNorm(el.value);
+    ok = !!el.value.trim() && card.en.some(a => fuzzyNorm(a) === input || basicNorm(a) === basicNorm(el.value));
   }
 
   S.currentAnswer = el.value;
