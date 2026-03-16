@@ -138,6 +138,99 @@
     .field { margin-bottom: 1rem }
     .gap { margin-top: .75rem }
 
+    /* ── Settings Screen ── */
+    .btn-gear {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 38px;
+      height: 38px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .btn-gear:active { transform: scale(.92) }
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+    }
+    .settings-back {
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: .25rem .5rem;
+    }
+    .settings-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .setting-desc {
+      font-size: .72rem;
+      color: var(--dim);
+      margin-top: .35rem;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none }
+    .toggle-label {
+      font-size: .88rem;
+      font-weight: 600;
+    }
+    .toggle-sub {
+      font-size: .68rem;
+      color: var(--dim);
+      margin-top: .15rem;
+    }
+    .toggle-switch {
+      width: 44px;
+      height: 26px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 13px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      margin-left: 1rem;
+      transition: background .2s, border-color .2s;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 18px; height: 18px;
+      background: var(--dim);
+      border-radius: 50%;
+      transition: transform .2s, background .2s;
+    }
+    .toggle-switch.on {
+      background: var(--green);
+      border-color: var(--green-dark);
+    }
+    .toggle-switch.on::after {
+      transform: translateX(18px);
+      background: #fff;
+    }
+    .app-info {
+      text-align: center;
+      font-size: .72rem;
+      color: var(--dim);
+      margin-top: 2rem;
+    }
+
     /* ── Profile Screen ── */
     .logo-wrap { text-align: center; margin-bottom: 1.5rem }
     .logo-icon {
@@ -824,6 +917,7 @@ function loadSaved() {
   S.direction = LS.get('jf_direction') || 'jp2en';
   S.skillIdx = parseInt(LS.get('jf_skillIdx') || '10', 10);
   try { S.history = JSON.parse(LS.get('jf_history') || '{}'); } catch(e) { S.history = {}; }
+  try { Object.assign(S.settings, JSON.parse(LS.get('jf_settings') || '{}')); } catch(e) {}
 }
 
 function saveState() {
@@ -832,6 +926,7 @@ function saveState() {
   LS.set('jf_direction', S.direction);
   LS.set('jf_skillIdx', String(S.skillIdx));
   LS.set('jf_history', JSON.stringify(S.history));
+  LS.set('jf_settings', JSON.stringify(S.settings));
 }
 
 // ══════════════════════════════════════════════════════
@@ -1029,6 +1124,7 @@ const S = {
   _keyHandler: null,
   _recentTypes: [],
   noAudio: false,
+  settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false },
 };
 
 // ══════════════════════════════════════════════════════
@@ -1051,6 +1147,7 @@ function render(partial) {
     case 'study':    app.innerHTML = tplStudy(); break;
     case 'summary':  app.innerHTML = tplSummary(); break;
     case 'progress': app.innerHTML = tplProgress(); break;
+    case 'settings': app.innerHTML = tplSettings(); break;
   }
   bind();
 }
@@ -1076,6 +1173,7 @@ function tplProfile() {
   if (lastSection) opts += '</optgroup>';
 
   return `<div class="screen anim">
+    <button class="btn-gear" id="btn-settings"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="var(--dim)" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.04.31-.06.63-.06.94 0 .31.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></button>
     <div class="logo-wrap">
       <div class="logo-icon">🇯🇵</div>
       <div class="logo-title">日本語</div>
@@ -1116,8 +1214,61 @@ function tplProfile() {
 
     <button class="btn btn-green" id="btn-start">START</button>
     <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
-    <button class="btn btn-outline gap" id="btn-reset" style="color:var(--red);border-color:var(--red)">Reset Progress</button>
     <p class="note">Progress saved locally on this device.</p>
+  </div>`;
+}
+
+// ── Settings ──
+function tplSettings() {
+  const st = S.settings;
+  const wordCount = DATA.words ? DATA.words.length : '?';
+  const skillCount = DATA.skills ? DATA.skills.length : '?';
+  let lsBytes = 0;
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); lsBytes += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch(e) {}
+  const lsKB = (lsBytes / 1024).toFixed(1);
+  const appSize = document.documentElement.outerHTML.length;
+  const appKB = (appSize / 1024).toFixed(0);
+  const tog = (key, on) => `<div class="toggle-switch${on ? ' on' : ''}" data-toggle="${key}"></div>`;
+  return `<div class="screen anim">
+    <div class="settings-header">
+      <button class="settings-back" id="btn-settings-back">←</button>
+      <div class="settings-title">Settings</div>
+    </div>
+
+    <div class="field">
+      <div class="label">Typing leniency</div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Macron vowels</div><div class="toggle-sub">ō → ou, ā → aa, ī → ii, ū → uu, ē → ee</div></div>
+        ${tog('macronVowels', st.macronVowels)}
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Ignore hyphens & spaces</div><div class="toggle-sub">e.g. "ice cream" matches "icecream"</div></div>
+        ${tog('ignoreHyphens', st.ignoreHyphens)}
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Romanization variants</div><div class="toggle-sub">shi ↔ si, chi ↔ ti, tsu ↔ tu, fu ↔ hu, oo ↔ ou</div></div>
+        ${tog('romajiVariants', st.romajiVariants)}
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">Display</div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Show romaji by default</div><div class="toggle-sub">${st.showRomaji ? 'Visible on every card' : 'Tap the word to reveal'}</div></div>
+        ${tog('showRomaji', st.showRomaji)}
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:2rem">
+      <button class="btn btn-outline" id="btn-reset" style="color:var(--red);border-color:var(--red)">Reset Progress</button>
+      <button class="btn btn-outline gap" id="btn-nuke" style="color:var(--red);border-color:var(--red)">Delete All Data</button>
+    </div>
+
+    <div class="app-info">
+      ${wordCount} words · ${skillCount} skills<br>
+      App size: ${appKB} KB · Saved data: ${lsKB} KB<br>
+      v1.0
+    </div>
   </div>`;
 }
 
@@ -1351,6 +1502,22 @@ function bind() {
     });
 
     $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
+    $('btn-settings')?.addEventListener('click', () => { S.screen = 'settings'; render(); });
+  }
+
+  if (S.screen === 'settings') {
+    $('btn-settings-back')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+
+    document.querySelectorAll('[data-toggle]').forEach(el => {
+      el.addEventListener('click', () => {
+        const key = el.dataset.toggle;
+        S.settings[key] = !S.settings[key];
+        el.classList.toggle('on', S.settings[key]);
+        const sub = el.parentElement.querySelector('.toggle-sub');
+        if (key === 'showRomaji' && sub) sub.textContent = S.settings[key] ? 'Visible on every card' : 'Tap the word to reveal';
+        saveState();
+      });
+    });
 
     $('btn-reset')?.addEventListener('click', () => {
       if (!confirm('Reset all learning progress? Your settings and name will be kept.')) return;
@@ -1358,6 +1525,13 @@ function bind() {
       S.skillIdx = 10;
       saveState();
       render();
+    });
+
+    $('btn-nuke')?.addEventListener('click', () => {
+      if (!confirm('Delete ALL data? This removes progress, settings, name — everything. Cannot be undone.')) return;
+      try { localStorage.clear(); } catch(e) {}
+      try { document.cookie.split(';').forEach(c => { document.cookie = c.trim().split('=')[0] + '=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/'; }); } catch(e) {}
+      location.reload();
     });
   }
 
@@ -1457,7 +1631,7 @@ function startSession(deck) {
   S.currentAnswer = '';
   S.correctCount = 0;
   S.wrongCount = 0;
-  S.showRomaji = false;
+  S.showRomaji = S.settings.showRomaji;
   S.selectedChoice = null;
   S.exerciseType = pickExerciseType(S.cards[0]);
   S.choices = S.exerciseType.mode === 'choice' ? buildChoices(S.cards[0], deck, S.exerciseType.direction) : [];
@@ -1495,18 +1669,19 @@ function recordAnswer(card, ok) {
 }
 
 function fuzzyNorm(s) {
-  let r = s.trim().toLowerCase().replace(/['']/g, "'").replace(/[-\s]+/g, '');
-  // Macron vowels → doubled/common
-  r = r.replace(/ā/g,'aa').replace(/ī/g,'ii').replace(/ū/g,'uu').replace(/ē/g,'ee').replace(/ō/g,'ou');
-  // Hepburn → Nihon-shiki common form (normalize to Hepburn)
-  r = r.replace(/sya/g,'sha').replace(/syu/g,'shu').replace(/syo/g,'sho');
-  r = r.replace(/tya/g,'cha').replace(/tyu/g,'chu').replace(/tyo/g,'cho');
-  r = r.replace(/zya/g,'ja').replace(/zyu/g,'ju').replace(/zyo/g,'jo');
-  r = r.replace(/\bsi\b|si(?=[aeiou])/g,'shi').replace(/\bti\b|ti(?=[aeiou])/g,'chi');
-  r = r.replace(/\btu\b|tu(?=[aeiou])/g,'tsu').replace(/\bhu\b|hu(?=[aeiou])/g,'fu');
-  r = r.replace(/\bzi\b|zi(?=[aeiou])/g,'ji');
-  // Normalize long-o: oo → ou
-  r = r.replace(/oo/g, 'ou');
+  let r = s.trim().toLowerCase().replace(/['']/g, "'");
+  const st = S.settings;
+  if (st.ignoreHyphens) r = r.replace(/[-\s]+/g, '');
+  if (st.macronVowels) r = r.replace(/ā/g,'aa').replace(/ī/g,'ii').replace(/ū/g,'uu').replace(/ē/g,'ee').replace(/ō/g,'ou');
+  if (st.romajiVariants) {
+    r = r.replace(/sya/g,'sha').replace(/syu/g,'shu').replace(/syo/g,'sho');
+    r = r.replace(/tya/g,'cha').replace(/tyu/g,'chu').replace(/tyo/g,'cho');
+    r = r.replace(/zya/g,'ja').replace(/zyu/g,'ju').replace(/zyo/g,'jo');
+    r = r.replace(/\bsi\b|si(?=[aeiou])/g,'shi').replace(/\bti\b|ti(?=[aeiou])/g,'chi');
+    r = r.replace(/\btu\b|tu(?=[aeiou])/g,'tsu').replace(/\bhu\b|hu(?=[aeiou])/g,'fu');
+    r = r.replace(/\bzi\b|zi(?=[aeiou])/g,'ji');
+    r = r.replace(/oo/g, 'ou');
+  }
   return r;
 }
 
@@ -1565,7 +1740,7 @@ function next() {
   S.lastCorrect = null;
   S.currentAnswer = '';
   S.selectedChoice = null;
-  S.showRomaji = false;
+  S.showRomaji = S.settings.showRomaji;
   if (S.idx >= S.cards.length) {
     S.screen = 'summary';
     const a = _lessonCompleteAudio.cloneNode();
