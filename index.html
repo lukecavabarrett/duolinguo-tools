@@ -378,6 +378,40 @@
       padding: 0;
     }
     .btn-speaker svg { width: 24px; height: 24px; fill: #fff }
+
+    .audio-viz {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+    }
+    .audio-bars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 48px;
+    }
+    .audio-bars span {
+      display: block;
+      width: 5px;
+      border-radius: 3px;
+      background: var(--blue);
+      opacity: .5;
+      animation: barPulse 1.2s ease-in-out infinite alternate;
+    }
+    .audio-bars span:nth-child(1) { animation-delay: 0s }
+    .audio-bars span:nth-child(2) { animation-delay: .1s }
+    .audio-bars span:nth-child(3) { animation-delay: .2s }
+    .audio-bars span:nth-child(4) { animation-delay: .3s }
+    .audio-bars span:nth-child(5) { animation-delay: .4s }
+    .audio-bars span:nth-child(6) { animation-delay: .5s }
+    .audio-bars span:nth-child(7) { animation-delay: .6s }
+    .audio-bars span:nth-child(8) { animation-delay: .15s }
+    .audio-bars span:nth-child(9) { animation-delay: .35s }
+    @keyframes barPulse {
+      0% { transform: scaleY(.6); opacity: .35 }
+      100% { transform: scaleY(1); opacity: .7 }
+    }
     .btn-speaker:active { transform: translateY(2px); border-bottom-width: 2px; filter: brightness(.9) }
 
     /* Type mode */
@@ -408,6 +442,55 @@
     }
     .feedback.c { color: var(--green) }
     .feedback.w { color: var(--red) }
+
+    .word-info-banner {
+      background: var(--red-bg);
+      border: 2px solid var(--red);
+      border-radius: var(--radius-sm);
+      padding: .85rem 1rem;
+      margin-top: .5rem;
+      animation: fadeUp .25s ease;
+    }
+    .word-info-banner .wib-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .word-info-banner .wib-jp {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .word-info-banner .wib-jp rt {
+      font-size: .5em;
+      color: var(--dim);
+    }
+    .word-info-banner .wib-play {
+      width: 30px; height: 30px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .word-info-banner .wib-play svg { width: 16px; height: 16px; fill: var(--blue) }
+    .word-info-banner .wib-romaji {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-top: .2rem;
+    }
+    .word-info-banner .wib-en {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--dim);
+      margin-top: .3rem;
+    }
 
     .btn-check {
       padding: .85rem;
@@ -656,6 +739,76 @@ const SESSION_SIZE = 15;
 const LETTERS = ['A','B','C','D'];
 
 // ══════════════════════════════════════════════════════
+//  EXERCISE TYPES
+// ══════════════════════════════════════════════════════
+const EXERCISE_TYPES = [
+  { id: 'jp2en_choice', direction: 'jp2en', mode: 'choice', difficulty: 1,   audio: false, label: 'JP → EN choice' },
+  { id: 'audio_choice', direction: 'jp2en', mode: 'choice', difficulty: 1.5, audio: true,  label: 'Listen → EN choice' },
+  { id: 'en2jp_choice', direction: 'en2jp', mode: 'choice', difficulty: 2,   audio: false, label: 'EN → JP choice' },
+  { id: 'jp2en_type',   direction: 'jp2en', mode: 'type',   difficulty: 3,   audio: false, label: 'JP → EN type' },
+  { id: 'en2jp_type',   direction: 'en2jp', mode: 'type',   difficulty: 4,   audio: false, label: 'EN → JP type' },
+];
+
+function pickExerciseType(card) {
+  // For non-mixed modes, return a fixed exercise type
+  if (S.exerciseMode !== 'mixed') {
+    const mode = S.exerciseMode; // 'choice' or 'type'
+    const dir = S.direction;
+    return EXERCISE_TYPES.find(t => t.mode === mode && t.direction === dir && !t.audio) || EXERCISE_TYPES[0];
+  }
+
+  // Compute familiarity
+  const id = cardId(card);
+  const h = S.history[id] || { seen: 0, correct: 0 };
+  let fam = 0;
+  if (h.seen > 0) {
+    fam = (h.correct / h.seen) * Math.min(h.seen / 5, 1);
+  }
+
+  // Filter eligible types by familiarity
+  let maxDiff;
+  if (fam < 0.3) maxDiff = 1.5;
+  else if (fam < 0.5) maxDiff = 2;
+  else if (fam < 0.7) maxDiff = 3;
+  else maxDiff = 4;
+
+  let eligible = EXERCISE_TYPES.filter(t => t.difficulty <= maxDiff);
+  if (eligible.length === 0) eligible = [EXERCISE_TYPES[0]];
+
+  // Audio type requires card.audio
+  if (!card.audio) eligible = eligible.filter(t => !t.audio);
+
+  // Avoid repeating same type 3x in a row
+  if (S._recentTypes && S._recentTypes.length >= 2) {
+    const last2 = S._recentTypes.slice(-2);
+    if (last2[0] === last2[1]) {
+      const filtered = eligible.filter(t => t.id !== last2[0]);
+      if (filtered.length > 0) eligible = filtered;
+    }
+  }
+
+  // Weighted random: bias toward harder types as familiarity rises
+  const weights = eligible.map(t => {
+    if (fam >= 0.7) return t.difficulty; // prefer hard
+    return 1; // uniform for beginners
+  });
+  const totalW = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * totalW;
+  let pick = eligible[0];
+  for (let i = 0; i < eligible.length; i++) {
+    r -= weights[i];
+    if (r <= 0) { pick = eligible[i]; break; }
+  }
+
+  // Track recent types
+  if (!S._recentTypes) S._recentTypes = [];
+  S._recentTypes.push(pick.id);
+  if (S._recentTypes.length > 3) S._recentTypes.shift();
+
+  return pick;
+}
+
+// ══════════════════════════════════════════════════════
 //  LOCAL STORAGE
 // ══════════════════════════════════════════════════════
 const LS = {
@@ -665,7 +818,13 @@ const LS = {
 
 function loadSaved() {
   S.username = LS.get('jf_username') || '';
-  S.mode = LS.get('jf_mode') || 'choice';
+  // Backward compat: old 'choice'/'type' values map to exerciseMode
+  const savedMode = LS.get('jf_mode') || 'mixed';
+  if (savedMode === 'mixed' || savedMode === 'choice' || savedMode === 'type') {
+    S.exerciseMode = savedMode;
+  } else {
+    S.exerciseMode = 'mixed';
+  }
   S.direction = LS.get('jf_direction') || 'jp2en';
   S.skillIdx = parseInt(LS.get('jf_skillIdx') || '10', 10);
   try { S.history = JSON.parse(LS.get('jf_history') || '{}'); } catch(e) { S.history = {}; }
@@ -673,7 +832,7 @@ function loadSaved() {
 
 function saveState() {
   LS.set('jf_username', S.username);
-  LS.set('jf_mode', S.mode);
+  LS.set('jf_mode', S.exerciseMode);
   LS.set('jf_direction', S.direction);
   LS.set('jf_skillIdx', String(S.skillIdx));
   LS.set('jf_history', JSON.stringify(S.history));
@@ -706,44 +865,41 @@ function fallbackTTS(text) {
   speechSynthesis.speak(u);
 }
 
-function playCorrectSound() {
+// Preload Duolingo correct/wrong sounds
+const CORRECT_SOUND_URL = 'https://www.myinstants.com/media/sounds/duolingo-correct.mp3';
+const WRONG_SOUND_URL = 'https://www.myinstants.com/media/sounds/duolingo-wrong.mp3';
+const LESSON_COMPLETE_URL = 'https://www.myinstants.com/media/sounds/duolingo-completed-lesson.mp3';
+const _correctAudio = new Audio(CORRECT_SOUND_URL);
+const _wrongAudio = new Audio(WRONG_SOUND_URL);
+const _lessonCompleteAudio = new Audio(LESSON_COMPLETE_URL);
+
+function _fallbackCorrectTone() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    // Duolingo-style bright ascending "da-ding!"
-    const notes = [587.33, 784]; // D5 → G5
-    notes.forEach((freq, i) => {
+    [587.33, 784].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
       const start = t + i * 0.12;
-      // Main tone + soft overtone for warmth
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      osc2.type = 'sine';
-      osc2.frequency.value = freq * 2;
-      const mix = ctx.createGain();
-      mix.gain.value = 0.15; // overtone quieter
-      osc2.connect(mix);
-      mix.connect(gain);
-      osc.connect(gain);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      osc2.type = 'sine'; osc2.frequency.value = freq * 2;
+      const mix = ctx.createGain(); mix.gain.value = 0.15;
+      osc2.connect(mix); mix.connect(gain); osc.connect(gain);
       gain.connect(ctx.destination);
       gain.gain.setValueAtTime(0, start);
       gain.gain.linearRampToValueAtTime(0.22, start + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
-      osc.start(start);
-      osc.stop(start + 0.3);
-      osc2.start(start);
-      osc2.stop(start + 0.3);
+      osc.start(start); osc.stop(start + 0.3);
+      osc2.start(start); osc2.stop(start + 0.3);
     });
   } catch(e) {}
 }
 
-function playWrongSound() {
+function _fallbackWrongTone() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    // Duolingo-style soft low "bwop" — two detuned sines for thickness
     const osc = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -751,19 +907,26 @@ function playWrongSound() {
     osc.frequency.setValueAtTime(280, t);
     osc.frequency.exponentialRampToValueAtTime(200, t + 0.15);
     osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(276, t); // slightly detuned
+    osc2.frequency.setValueAtTime(276, t);
     osc2.frequency.exponentialRampToValueAtTime(196, t + 0.15);
-    osc.connect(gain);
-    osc2.connect(gain);
+    osc.connect(gain); osc2.connect(gain);
     gain.connect(ctx.destination);
     gain.gain.setValueAtTime(0, t);
     gain.gain.linearRampToValueAtTime(0.18, t + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-    osc.start(t);
-    osc.stop(t + 0.22);
-    osc2.start(t);
-    osc2.stop(t + 0.22);
+    osc.start(t); osc.stop(t + 0.22);
+    osc2.start(t); osc2.stop(t + 0.22);
   } catch(e) {}
+}
+
+function playCorrectSound() {
+  const a = _correctAudio.cloneNode();
+  a.play().catch(() => _fallbackCorrectTone());
+}
+
+function playWrongSound() {
+  const a = _wrongAudio.cloneNode();
+  a.play().catch(() => _fallbackWrongTone());
 }
 
 // ══════════════════════════════════════════════════════
@@ -800,31 +963,49 @@ function cardId(card) {
   return card.jp + '|' + card.skill;
 }
 
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function buildChoices(correct, deck, direction) {
-  const pool = [...deck.filter(c => cardId(c) !== cardId(correct))];
-  // Shuffle pool
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
+  const cid = cardId(correct);
+  const getAnswer = direction === 'jp2en' ? c => c.en[0] : c => c.jp;
+  const correctAnswer = getAnswer(correct);
 
-  let correctAnswer, getAnswer;
+  // Build a set of all meanings that would be "correct" to avoid ambiguous distractors
+  let correctSet;
   if (direction === 'jp2en') {
-    correctAnswer = correct.en[0];
-    getAnswer = c => c.en[0];
+    // All English meanings of the correct word (lowercased for comparison)
+    correctSet = new Set(correct.en.map(e => e.toLowerCase()));
   } else {
-    correctAnswer = correct.jp;
-    getAnswer = c => c.jp;
+    correctSet = new Set([correct.jp.toLowerCase()]);
+    if (correct.kana) correctSet.add(correct.kana.toLowerCase());
   }
 
-  const distractors = pool.slice(0, 3).map(getAnswer);
-  const all = [correctAnswer, ...distractors];
-  // Shuffle answers
-  for (let i = all.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [all[i], all[j]] = [all[j], all[i]];
+  // Prefer same-skill distractors
+  const others = deck.filter(c => cardId(c) !== cid);
+  const sameSkill = shuffle(others.filter(c => c.skill === correct.skill));
+  const otherSkill = shuffle(others.filter(c => c.skill !== correct.skill));
+
+  const distractors = [];
+  const seen = new Set([correctAnswer.toLowerCase()]);
+  for (const c of [...sameSkill, ...otherSkill]) {
+    if (distractors.length >= 3) break;
+    const ans = getAnswer(c);
+    const ansLower = ans.toLowerCase();
+    // Skip if this answer overlaps with any of the correct card's meanings
+    if (seen.has(ansLower)) continue;
+    if (correctSet.has(ansLower)) continue;
+    if (direction === 'jp2en' && c.en.some(e => correctSet.has(e.toLowerCase()))) continue;
+    distractors.push(ans);
+    seen.add(ansLower);
   }
-  return all;
+
+  return shuffle([correctAnswer, ...distractors]);
 }
 
 // ══════════════════════════════════════════════════════
@@ -833,8 +1014,9 @@ function buildChoices(correct, deck, direction) {
 const S = {
   screen: 'profile',
   username: '',
-  mode: 'choice',
-  direction: 'jp2en',
+  exerciseMode: 'mixed',  // 'mixed' | 'choice' | 'type'
+  direction: 'jp2en',     // used only for non-mixed modes
+  exerciseType: EXERCISE_TYPES[0], // per-card exercise config
   skillIdx: 10,
   deck: [],
   cards: [],
@@ -849,6 +1031,7 @@ const S = {
   choices: [],
   selectedChoice: null,
   _keyHandler: null,
+  _recentTypes: [],
 };
 
 // ══════════════════════════════════════════════════════
@@ -910,14 +1093,15 @@ function tplProfile() {
     </div>
 
     <div class="field">
-      <div class="label">Mode</div>
+      <div class="label">Exercise mode</div>
       <div class="mode-toggle">
-        <button class="mode-btn${S.mode === 'type' ? ' active' : ''}" data-mode="type">Type answer</button>
-        <button class="mode-btn${S.mode === 'choice' ? ' active' : ''}" data-mode="choice">Multiple choice</button>
+        <button class="mode-btn${S.exerciseMode === 'mixed' ? ' active' : ''}" data-mode="mixed">Mixed</button>
+        <button class="mode-btn${S.exerciseMode === 'choice' ? ' active' : ''}" data-mode="choice">Choice</button>
+        <button class="mode-btn${S.exerciseMode === 'type' ? ' active' : ''}" data-mode="type">Type</button>
       </div>
     </div>
 
-    <div class="field">
+    <div class="field" id="dir-field" style="${S.exerciseMode === 'mixed' ? 'display:none' : ''}">
       <div class="label">Direction</div>
       <div class="dir-toggle">
         <button class="dir-btn${S.direction === 'jp2en' ? ' active' : ''}" data-dir="jp2en">JP → EN</button>
@@ -946,12 +1130,19 @@ function rubyWord(jp, kana) {
 
 function cardTop() {
   const card = S.cards[S.idx];
+  const et = S.exerciseType;
   const pct = (S.idx / Math.max(S.cards.length, 1)) * 100;
   const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
-  const isReverse = S.direction === 'en2jp';
+  const isReverse = et.direction === 'en2jp';
+  const isAudio = et.audio;
+
+  const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
 
   let mainWordHtml;
-  if (isReverse) {
+  if (isAudio) {
+    // Audio-only: large speaker, no text
+    mainWordHtml = '';
+  } else if (isReverse) {
     mainWordHtml = esc(card.en.join(', '));
   } else {
     mainWordHtml = rubyWord(card.jp, card.kana);
@@ -959,6 +1150,7 @@ function cardTop() {
 
   const romajiVis = S.showRomaji ? 'visible' : 'hidden';
   const hintVis = S.showRomaji ? 'gone' : '';
+  const showRomajiArea = !isReverse && !isAudio && card.romaji;
 
   return `
     <div class="study-header">
@@ -967,22 +1159,51 @@ function cardTop() {
       <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
     </div>
     <div class="${cardCls}" id="flashcard">
-      <div class="word-row">
-        <button class="btn-speaker" id="btn-speak"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
-        <div class="word-main" id="word-tap">${mainWordHtml}</div>
-      </div>
-      ${!isReverse && card.romaji ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
-      <div class="romaji-hint ${hintVis}" id="rom-hint">tap word for romaji</div>` : ''}
+      ${isAudio ? `
+        <div style="text-align:center;padding:1rem 0">
+          <div class="audio-viz" id="audio-viz">
+            <button class="btn-speaker" id="btn-speak" style="width:64px;height:64px">${speakerSvg}</button>
+            <div class="audio-bars">
+              <span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span>
+              <span style="height:90%"></span><span style="height:60%"></span><span style="height:80%"></span>
+              <span style="height:45%"></span><span style="height:75%"></span><span style="height:50%"></span>
+            </div>
+          </div>
+          <div style="margin-top:.75rem;font-size:.82rem;font-weight:700;color:var(--dim)">What does this mean?</div>
+        </div>
+      ` : `
+        <div class="word-row">
+          <button class="btn-speaker" id="btn-speak">${speakerSvg}</button>
+          <div class="word-main" id="word-tap">${mainWordHtml}</div>
+        </div>
+        ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
+        <div class="romaji-hint ${hintVis}" id="rom-hint">tap word for romaji</div>` : ''}
+      `}
     </div>`;
 }
 
+function wordInfoBanner(card) {
+  const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+  const jpHtml = hasKanji(card.jp) && card.kana && card.kana !== card.jp
+    ? `<ruby>${esc(card.jp)}<rp>(</rp><rt>${esc(card.kana)}</rt><rp>)</rp></ruby>`
+    : esc(card.jp);
+  return `<div class="word-info-banner">
+    <div class="wib-row">
+      <span class="wib-jp">${jpHtml}</span>
+      <button class="wib-play" id="btn-wib-play">${speakerSvg}</button>
+    </div>
+    ${card.romaji ? `<div class="wib-romaji">${esc(card.romaji)}</div>` : ''}
+    <div class="wib-en">${esc(card.en.join(', '))}</div>
+  </div>`;
+}
+
 function tplStudy() {
-  return `<div class="screen anim">${cardTop()}${S.mode === 'choice' ? tplChoices() : tplType()}</div>`;
+  return `<div class="screen anim">${cardTop()}${S.exerciseType.mode === 'choice' ? tplChoices() : tplType()}</div>`;
 }
 
 function tplType() {
   const card = S.cards[S.idx];
-  const isReverse = S.direction === 'en2jp';
+  const isReverse = S.exerciseType.direction === 'en2jp';
   const placeholder = isReverse ? 'Type the Japanese (romaji or kana)...' : 'Type the English meaning...';
   const inpCls = 'answer-input' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
 
@@ -996,7 +1217,7 @@ function tplType() {
   const fb = S.answered
     ? (S.lastCorrect
       ? `<div class="feedback c">Correct!</div>`
-      : `<div class="feedback w">Answer: ${esc(correctDisplay)}</div>`)
+      : `<div class="feedback w">Incorrect</div>${wordInfoBanner(card)}`)
     : '<div class="feedback"></div>';
 
   const action = S.answered
@@ -1015,7 +1236,7 @@ function tplType() {
 
 function tplChoices() {
   const card = S.cards[S.idx];
-  const isReverse = S.direction === 'en2jp';
+  const isReverse = S.exerciseType.direction === 'en2jp';
   const correctAnswer = isReverse ? card.jp : card.en[0];
 
   return `<div class="choices">
@@ -1029,6 +1250,7 @@ function tplChoices() {
         <span class="choice-letter">${LETTERS[i]}</span>${esc(opt)}
       </button>`;
     }).join('')}
+    ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx]) : ''}
     ${S.answered ? `<button class="btn-next" id="btn-next" style="margin-top:.4rem">${S.idx + 1 < S.cards.length ? 'CONTINUE' : 'FINISH'}</button>` : ''}
   </div>`;
 }
@@ -1044,7 +1266,7 @@ function tplSummary() {
   return `<div class="screen anim">
     <div class="sum-icon ${iconClass}">${emoji}</div>
     <div class="sum-title">${title}</div>
-    <div class="sum-sub">${esc(S.username || 'Learner')} · ${S.direction === 'jp2en' ? 'JP→EN' : 'EN→JP'}</div>
+    <div class="sum-sub">${esc(S.username || 'Learner')} · ${S.exerciseMode === 'mixed' ? 'Mixed' : (S.direction === 'jp2en' ? 'JP→EN' : 'EN→JP')}</div>
     <div class="sum-pct">${pct}<span>%</span></div>
     <div class="stat-grid">
       <div class="stat-box c"><div class="v">${S.correctCount}</div><div class="l">Correct</div></div>
@@ -1052,7 +1274,7 @@ function tplSummary() {
     </div>
     <div class="sum-note">Harder words will appear more often next time.</div>
     <button class="btn btn-green" id="btn-again">NEW SESSION</button>
-    <button class="btn btn-outline gap" id="btn-switch">Switch to ${S.mode === 'choice' ? 'Type answer' : 'Multiple choice'}</button>
+    ${S.exerciseMode !== 'mixed' ? `<button class="btn btn-outline gap" id="btn-switch">Switch to ${S.exerciseMode === 'choice' ? 'Type answer' : 'Multiple choice'}</button>` : ''}
     <button class="btn btn-outline gap" id="btn-profile">Change settings</button>
   </div>`;
 }
@@ -1095,8 +1317,10 @@ function bind() {
 
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        S.mode = btn.dataset.mode;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode));
+        S.exerciseMode = btn.dataset.mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.exerciseMode));
+        const dirField = document.getElementById('dir-field');
+        if (dirField) dirField.style.display = S.exerciseMode === 'mixed' ? 'none' : '';
       });
     });
 
@@ -1123,6 +1347,7 @@ function bind() {
     const ans = $('ans');
     $('btn-quit')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
     $('btn-speak')?.addEventListener('click', () => playAudio(S.cards[S.idx]));
+    $('btn-wib-play')?.addEventListener('click', () => playAudio(S.cards[S.idx]));
     $('word-tap')?.addEventListener('click', () => {
       if (!S.showRomaji) {
         S.showRomaji = true;
@@ -1132,11 +1357,16 @@ function bind() {
       }
     });
 
-    if (S.mode === 'type') {
+    // Auto-play audio for audio-only cards
+    if (S.exerciseType.audio && !S.answered) {
+      setTimeout(() => playAudio(S.cards[S.idx]), 150);
+    }
+
+    if (S.exerciseType.mode === 'type') {
       if (!S.answered) {
         $('btn-check')?.addEventListener('click', submitType);
         $('btn-skip')?.addEventListener('click', skipCard);
-        ans?.addEventListener('keydown', e => { if (e.key === 'Enter' && S.currentAnswer) submitType(); });
+        ans?.addEventListener('keydown', e => { if (e.key === 'Enter' && ans.value.trim()) { S.currentAnswer = ans.value; submitType(); } });
         ans?.addEventListener('input', e => {
           S.currentAnswer = e.target.value;
           const btn = $('btn-check');
@@ -1151,7 +1381,7 @@ function bind() {
       }
     }
 
-    if (S.mode === 'choice') {
+    if (S.exerciseType.mode === 'choice') {
       if (!S.answered) {
         document.querySelectorAll('.choice-btn').forEach((btn, i) => {
           btn.addEventListener('click', () => submitChoice(i));
@@ -1175,7 +1405,7 @@ function bind() {
   if (S.screen === 'summary') {
     $('btn-again')?.addEventListener('click', () => startSession(S.deck));
     $('btn-switch')?.addEventListener('click', () => {
-      S.mode = S.mode === 'choice' ? 'type' : 'choice';
+      S.exerciseMode = S.exerciseMode === 'choice' ? 'type' : 'choice';
       saveState();
       startSession(S.deck);
     });
@@ -1193,6 +1423,7 @@ function bind() {
 function startSession(deck) {
   if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
   S.cards = selectCards(deck);
+  S._recentTypes = [];
   S.idx = 0;
   S.answered = false;
   S.lastCorrect = null;
@@ -1201,7 +1432,8 @@ function startSession(deck) {
   S.wrongCount = 0;
   S.showRomaji = false;
   S.selectedChoice = null;
-  S.choices = S.mode === 'choice' ? buildChoices(S.cards[0], deck, S.direction) : [];
+  S.exerciseType = pickExerciseType(S.cards[0]);
+  S.choices = S.exerciseType.mode === 'choice' ? buildChoices(S.cards[0], deck, S.exerciseType.direction) : [];
   S.screen = 'study';
   render();
 }
@@ -1240,7 +1472,7 @@ function submitType() {
   if (!el || S.answered) return;
   const card = S.cards[S.idx];
   const norm = s => s.trim().toLowerCase().replace(/^to /, '').replace(/['']/g, "'");
-  const isReverse = S.direction === 'en2jp';
+  const isReverse = S.exerciseType.direction === 'en2jp';
 
   let ok;
   if (isReverse) {
@@ -1260,7 +1492,7 @@ function submitType() {
 function submitChoice(i) {
   if (S.answered) return;
   const card = S.cards[S.idx];
-  const isReverse = S.direction === 'en2jp';
+  const isReverse = S.exerciseType.direction === 'en2jp';
   const correctAnswer = isReverse ? card.jp : card.en[0];
   S.selectedChoice = i;
   recordAnswer(card, S.choices[i] === correctAnswer);
@@ -1290,8 +1522,15 @@ function next() {
   S.currentAnswer = '';
   S.selectedChoice = null;
   S.showRomaji = false;
-  if (S.idx >= S.cards.length) { S.screen = 'summary'; render(); return; }
-  if (S.mode === 'choice') S.choices = buildChoices(S.cards[S.idx], S.deck, S.direction);
+  if (S.idx >= S.cards.length) {
+    S.screen = 'summary';
+    const a = _lessonCompleteAudio.cloneNode();
+    a.play().catch(() => {});
+    render();
+    return;
+  }
+  S.exerciseType = pickExerciseType(S.cards[S.idx]);
+  if (S.exerciseType.mode === 'choice') S.choices = buildChoices(S.cards[S.idx], S.deck, S.exerciseType.direction);
   render();
 }
 
