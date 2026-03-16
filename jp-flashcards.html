@@ -875,11 +875,11 @@ const SESSION_SIZE = 15;
 //  EXERCISE TYPES
 // ══════════════════════════════════════════════════════
 const EXERCISE_TYPES = [
-  { id: 'jp2en_choice', direction: 'jp2en', mode: 'choice', difficulty: 1,   audio: false, label: 'JP → EN choice' },
-  { id: 'audio_choice', direction: 'jp2en', mode: 'choice', difficulty: 1.5, audio: true,  label: 'Listen → EN choice' },
-  { id: 'en2jp_choice', direction: 'en2jp', mode: 'choice', difficulty: 2,   audio: false, label: 'EN → JP choice' },
-  { id: 'jp2en_type',   direction: 'jp2en', mode: 'type',   difficulty: 3,   audio: false, label: 'JP → EN type' },
-  { id: 'en2jp_type',   direction: 'en2jp', mode: 'type',   difficulty: 4,   audio: false, label: 'EN → JP type' },
+  { id: 'jp2en_choice', direction: 'jp2en', mode: 'choice', difficulty: 1,   audioOnly: false, label: 'JP → EN choice' },
+  { id: 'audio_choice', direction: 'jp2en', mode: 'choice', difficulty: 1.5, audioOnly: true,  label: 'Listen → EN choice' },
+  { id: 'en2jp_choice', direction: 'en2jp', mode: 'choice', difficulty: 2,   audioOnly: false, label: 'EN → JP choice' },
+  { id: 'jp2en_type',   direction: 'jp2en', mode: 'type',   difficulty: 3,   audioOnly: false, label: 'JP → EN type' },
+  { id: 'en2jp_type',   direction: 'en2jp', mode: 'type',   difficulty: 4,   audioOnly: false, label: 'EN → JP type' },
 ];
 
 function pickExerciseType(card) {
@@ -887,29 +887,22 @@ function pickExerciseType(card) {
   if (S.exerciseMode !== 'mixed') {
     const mode = S.exerciseMode; // 'choice' or 'type'
     const dir = S.direction;
-    return EXERCISE_TYPES.find(t => t.mode === mode && t.direction === dir && !t.audio) || EXERCISE_TYPES[0];
+    return EXERCISE_TYPES.find(t => t.mode === mode && t.direction === dir && !t.audioOnly) || EXERCISE_TYPES[0];
   }
 
-  // Compute familiarity
-  const id = cardId(card);
-  const h = S.history[id] || { seen: 0, correct: 0 };
-  let fam = 0;
-  if (h.seen > 0) {
-    fam = (h.correct / h.seen) * Math.min(h.seen / 5, 1);
-  }
-
-  // Filter eligible types by familiarity
+  // Use wordStrength to determine eligible exercise types
+  const str = wordStrength(card);
   let maxDiff;
-  if (fam < 0.3) maxDiff = 1.5;
-  else if (fam < 0.5) maxDiff = 2;
-  else if (fam < 0.7) maxDiff = 3;
-  else maxDiff = 4;
+  if (str === 0) maxDiff = 1.5;       // unseen: JP→EN choice only
+  else if (str < 0.3) maxDiff = 2;    // seen: + EN→JP choice
+  else if (str < 0.5) maxDiff = 3;    // some practice: + JP→EN type
+  else maxDiff = 4;                   // moderate: all types
 
   let eligible = EXERCISE_TYPES.filter(t => t.difficulty <= maxDiff);
   if (eligible.length === 0) eligible = [EXERCISE_TYPES[0]];
 
-  // Audio type requires card.audio; also respect "can't listen now"
-  if (!card.audio || S.noAudio) eligible = eligible.filter(t => !t.audio);
+  // Audio-only type requires card.audio; also respect "can't listen now"
+  if (!card.audio || S.noAudio) eligible = eligible.filter(t => !t.audioOnly);
 
   // Avoid repeating same type 3x in a row
   if (S._recentTypes && S._recentTypes.length >= 2) {
@@ -920,11 +913,8 @@ function pickExerciseType(card) {
     }
   }
 
-  // Weighted random: bias toward harder types as familiarity rises
-  const weights = eligible.map(t => {
-    if (fam >= 0.7) return t.difficulty; // prefer hard
-    return 1; // uniform for beginners
-  });
+  // Weighted random: bias toward harder types for variety
+  const weights = eligible.map(t => t.difficulty);
   const totalW = weights.reduce((a, b) => a + b, 0);
   let r = Math.random() * totalW;
   let pick = eligible[0];
@@ -1425,7 +1415,7 @@ function cardTop() {
   const pct = (S.idx / Math.max(S.cards.length, 1)) * 100;
   const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
   const isReverse = et.direction === 'en2jp';
-  const isAudio = et.audio;
+  const isAudio = et.audioOnly;
 
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
 
@@ -1465,7 +1455,7 @@ function cardTop() {
         </div>
       ` : `
         <div class="word-row">
-          <button class="btn-speaker" id="btn-speak">${speakerSvg}</button>
+          ${isReverse ? '' : `<button class="btn-speaker" id="btn-speak">${speakerSvg}</button>`}
           <div class="word-main${isReverse ? ' word-en' : ''}" id="word-tap">${mainWordHtml}</div>
         </div>
         ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
@@ -1480,7 +1470,7 @@ function wordInfoBanner(card, exerciseType) {
     ? `<ruby>${esc(card.jp)}<rp>(</rp><rt>${esc(card.kana)}</rt><rp>)</rp></ruby>`
     : esc(card.jp);
   const dir = exerciseType ? exerciseType.direction : null;
-  const isAudio = exerciseType ? exerciseType.audio : false;
+  const isAudio = exerciseType ? exerciseType.audioOnly : false;
   const showJp = dir !== 'jp2en' || isAudio;
   return `<div class="word-info-banner">
     ${showJp ? `<div class="wib-row">
@@ -1727,7 +1717,7 @@ function bind() {
     });
 
     // Auto-play audio for audio-only cards
-    if (S.exerciseType.audio && !S.answered) {
+    if (S.exerciseType.audioOnly && !S.answered) {
       setTimeout(() => playAudio(S.cards[S.idx]), 150);
     }
 
