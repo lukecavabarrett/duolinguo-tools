@@ -264,6 +264,17 @@ function getCurrentLevel(): number {
   return DATA.skills.length - 1;
 }
 
+function seedProgress(maxSkillIdx: number): void {
+  const now = Date.now();
+  const skills = DATA.skills.slice(0, maxSkillIdx + 1);
+  for (const word of DATA.words) {
+    if (!skills.includes(word.skill)) continue;
+    const id = cardId(word);
+    S.history[id] = { seen: 10, correct: 10, interval: 7, ease: 2.5, due: now + 7 * 86400000 };
+  }
+  saveState();
+}
+
 function buildDeck(maxSkillIdx: number): Word[] {
   const activeSkills = DATA.skills.slice(0, maxSkillIdx + 1);
   return DATA.words.filter(w => activeSkills.includes(w.skill));
@@ -509,6 +520,23 @@ function tplProfile() {
 }
 
 // ── Settings ──
+function importSkillOpts(): string {
+  let opts = '';
+  let lastSection = '';
+  DATA.skills.forEach((sk, i) => {
+    const sec = Math.floor(i / 40) + 1;
+    const secLabel = `Section ${sec}`;
+    if (secLabel !== lastSection) {
+      if (lastSection) opts += '</optgroup>';
+      opts += `<optgroup label="${secLabel}">`;
+      lastSection = secLabel;
+    }
+    opts += `<option value="${i}">${i + 1}. ${esc(sk)}</option>`;
+  });
+  if (lastSection) opts += '</optgroup>';
+  return opts;
+}
+
 function tplSettings() {
   const st = S.settings;
   const wordCount = DATA.words ? DATA.words.length : '?';
@@ -555,6 +583,13 @@ function tplSettings() {
         <div><div class="toggle-label">Unlock all skills</div><div class="toggle-sub">${st.unlockAll ? 'Manual skill selection enabled' : 'Skills unlock as you learn'}</div></div>
         ${tog('unlockAll', st.unlockAll)}
       </div>
+    </div>
+
+    <div class="field">
+      <div class="label">Set starting level</div>
+      <div class="toggle-sub" style="margin-bottom:.4rem">Coming from Duolingo? Mark earlier words as learned.</div>
+      <select id="import-select">${importSkillOpts()}</select>
+      <button class="btn btn-outline gap" id="btn-import" style="margin-top:.4rem">Set starting level</button>
     </div>
 
     <div class="field" style="margin-top:2rem">
@@ -839,6 +874,16 @@ function bind(): void {
 
   if (S.screen === 'settings') {
     $('btn-settings-back')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+
+    $('btn-import')?.addEventListener('click', () => {
+      const sel = $('import-select') as HTMLSelectElement | null;
+      if (!sel) return;
+      const idx = parseInt(sel.value, 10);
+      const skill = DATA.skills[idx];
+      if (!confirm(`Start from "${skill}"? All earlier words will be marked as learned.`)) return;
+      seedProgress(idx - 1);
+      render();
+    });
 
     document.querySelectorAll<HTMLElement>('[data-toggle]').forEach(el => {
       el.addEventListener('click', () => {
