@@ -46,3 +46,5 @@ node enrich_vocab.mjs
 - **Better wrong-answer banner** — the explanation shown after a wrong answer is too crammed; redesign the layout to be clearer and more readable
 - **Fuzzy matching for typed answers** — accept minor differences like `o` vs `ō`, `ou` vs `oo`, missing hyphens, etc.
 - **Improved progress algorithm** — iterate on the SM-2 variant to better model long-term retention and adapt session difficulty
+- **Layout** - the continue button should not move the rest of the content up
+- **Reset Progress feature** - to implement

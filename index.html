@@ -1111,6 +1111,7 @@ function tplProfile() {
 
     <button class="btn btn-green" id="btn-start">START</button>
     <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
+    <button class="btn btn-outline gap" id="btn-reset" style="color:var(--red);border-color:var(--red)">Reset Progress</button>
     <p class="note">Progress saved locally on this device.</p>
   </div>`;
 }
@@ -1341,6 +1342,14 @@ function bind() {
     });
 
     $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
+
+    $('btn-reset')?.addEventListener('click', () => {
+      if (!confirm('Reset all learning progress? Your settings and name will be kept.')) return;
+      S.history = {};
+      S.skillIdx = 10;
+      saveState();
+      render();
+    });
   }
 
   if (S.screen === 'study') {
