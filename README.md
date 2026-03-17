@@ -81,7 +81,7 @@ This naturally handles edge cases:
 
 
 ## Bugs
-- (to be confirmed) after a skill reach 70%, we cannot practice it further, so we will never reach 100%. we might want to change a bit the progression algorithm (e.g. introduce next skill gradually as we solidify previous skill)
+- ~~after a skill reach 70%, we cannot practice it further, so we will never reach 100%.~~ ✓ — new words capped at half remaining session slots; reinforcement from past skills fills the rest
 - similarily, when practicing a specific skill, we cannot pick a mastered one
 - ~~typing issues - pasupoto, juichi.~~ ✓
 - ~~kana issues - o'clock is rendered into kana as "toki" when it should be ji.~~ ✓ — switched to wanakana (romaji → kana) with kuroshiro fallback

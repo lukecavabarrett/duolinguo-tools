@@ -272,9 +272,9 @@ function playWrongSound() {
 //
 // The user's "level" is the highest skill where ALL words have strength >= 0.7.
 // Sessions prioritize: (1) weak words (strength < 0.7), (2) due words
-// (spaced repetition interval expired), (3) new words from the next skill.
-// This naturally paces the user — they only advance when earlier words are solid,
-// and returning after time away means review before new material.
+// (spaced repetition interval expired), then blend (3) new words from the next
+// skill with (4) reinforcement of past strong words — new words are capped at
+// half the remaining slots so the transition between skills feels gradual.
 function wordStrength(card: Word): number {
   const h = S.history[cardId(card)];
   if (!h || h.seen === 0) return 0;
@@ -342,9 +342,36 @@ function selectCards(deck: Word[]): Word[] {
     ? DATA.words.filter(w => w.skill === nextSkill && !S.history[cardId(w)]?.seen)
     : [];
 
-  const session = [];
-  const used = new Set();
-  for (const pool of [weak, due, newWords]) {
+  // 4. Reinforcement — strong words not yet due, for extra practice (lowest strength first)
+  const reinforce = deck.filter(card => {
+    const h = S.history[cardId(card)];
+    return h && h.seen > 0 && wordStrength(card) >= 0.7 && now <= h.due;
+  }).sort((a, b) => wordStrength(a) - wordStrength(b));
+
+  const session: Word[] = [];
+  const used = new Set<string>();
+
+  // Fill weak and due first (highest priority)
+  for (const pool of [weak, due]) {
+    for (const card of pool) {
+      if (session.length >= SESSION_SIZE) break;
+      const id = cardId(card);
+      if (!used.has(id)) { session.push(card); used.add(id); }
+    }
+  }
+
+  // Blend new words and reinforcement: new words get at most half the remaining slots
+  const remaining = SESSION_SIZE - session.length;
+  const newCap = Math.ceil(remaining / 2);
+  let newCount = 0;
+  for (const card of newWords) {
+    if (session.length >= SESSION_SIZE || newCount >= newCap) break;
+    const id = cardId(card);
+    if (!used.has(id)) { session.push(card); used.add(id); newCount++; }
+  }
+
+  // Fill rest with reinforcement, then overflow new words if reinforcement runs out
+  for (const pool of [reinforce, newWords]) {
     for (const card of pool) {
       if (session.length >= SESSION_SIZE) break;
       const id = cardId(card);
