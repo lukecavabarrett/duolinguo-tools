@@ -30,18 +30,12 @@ Open `jp-flashcards.html` in any browser. That's it.
 
 ## Building from source
 
-The distributable file is built by embedding `vocab_data.json` into `index.html`:
-
 ```bash
+npm install
 python3 build.py
 ```
 
-To re-enrich the vocabulary data (add kana/romaji via kuroshiro):
-
-```bash
-npm install
-node enrich_vocab.mjs
-```
+The build pipeline: enriches scraped vocab with kana readings (wanakana + kuroshiro), type-checks and bundles TypeScript, then embeds everything into `jp-flashcards.html`.
 
 ## Progression algorithm
 
@@ -80,5 +74,14 @@ This naturally handles edge cases:
 - **Stories** - This feature is large and for the future. Using https://duome.eu/stories/en/ja to add 2 features: sentences and stories.
 - ~~**Unit-specific practice**~~ ✓ — "Unit only" toggle to practice a single skill
 - ~~**Feedback**~~ ✓ — Duolingo 5-correct-answers sound + streak banner animation
-- **Fonts** - when selecting among jp options, use a nicer font
-- **Skill progression** - change formula to compute skill percentage to make it more gradual
+- ~~**Fonts**~~ ✓ - when selecting among jp options, use a nicer font
+- ~~**Skill progression**~~ ✓ - change formula to compute skill percentage to make it more gradual
+- **Kanji practice** - maybe we should be able to have kanji<->kana exercises - and distractors should be based on kana similarity
+- **Multilingual** - This feature is large and for the future. Separate in this repo what is language agnostic and what is language specific, and make it so we can build the app specifying two languages (native, learn). Then for each learned language, we will have some modules that handle special stuff (jp is a good example because it has a lot of special behaviour). This is really not needed, and mostly just a flex - we should do this only if it does not hinder the jp usage.
+
+
+## Bugs
+- (to be confirmed) after a skill reach 70%, we cannot practice it further, so we will never reach 100%. we might want to change a bit the progression algorithm (e.g. introduce next skill gradually as we solidify previous skill)
+- similarily, when practicing a specific skill, we cannot pick a mastered one
+- ~~typing issues - pasupoto, juichi.~~ ✓
+- ~~kana issues - o'clock is rendered into kana as "toki" when it should be ji.~~ ✓ — switched to wanakana (romaji → kana) with kuroshiro fallback
