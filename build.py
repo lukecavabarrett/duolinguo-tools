@@ -94,8 +94,17 @@ with open('src/template.html', 'r') as f:
 
 git_hash = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip() or 'dev'
 
+# Load cluster data (optional — empty object if missing)
+cluster_path = 'data/skill_clusters.json'
+if os.path.exists(cluster_path):
+    with open(cluster_path, 'r') as f:
+        cluster_json = json.dumps(json.load(f), ensure_ascii=False, separators=(',', ':'))
+else:
+    cluster_json = '{}'
+
 output = html.replace('APP_JS_PLACEHOLDER', app_js)
 output = output.replace('VOCAB_DATA_PLACEHOLDER', vocab_json)
+output = output.replace('CLUSTER_DATA_PLACEHOLDER', cluster_json)
 output = output.replace('GIT_VERSION_PLACEHOLDER', git_hash)
 
 with open('index.html', 'w') as f:
