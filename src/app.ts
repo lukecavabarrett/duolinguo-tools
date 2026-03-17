@@ -35,8 +35,8 @@ function parseVocabData(parsed: any): VocabData {
       if (parsed && parsed.skills) { DATA = parseVocabData(parsed); return; }
     } catch(e) {}
   }
-  // Fallback: try fetching vocab_data.json (works when served, not file://)
-  fetch('vocab_data.json')
+  // Fallback: try fetching enriched data (works when served, not file://)
+  fetch('data/enriched/vocab_data.json')
     .then(r => r.json())
     .then(d => { DATA = parseVocabData(d); render(); })
     .catch(() => console.warn('No vocab data found'));

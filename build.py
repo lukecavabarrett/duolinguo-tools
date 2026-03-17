@@ -1,35 +1,60 @@
 #!/usr/bin/env python3
-"""Build a self-contained HTML flashcard app by embedding vocab_data.json into index.html."""
-import json, os, subprocess, sys
+"""Build a self-contained HTML flashcard app.
+
+Pipeline: enrich vocab → type-check → bundle JS → embed into template → jp-flashcards.html
+"""
+import json, os, subprocess, sys, time
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+t0 = time.time()
 
-# 1. Type check
-print("Running tsc...")
-result = subprocess.run(['npx', 'tsc', '--noEmit'], capture_output=True, text=True)
+def step(name):
+    """Print step name and return a timer to print elapsed time."""
+    print(f"{name}...", end=' ', flush=True)
+    start = time.time()
+    return start
+
+def done(start, detail=''):
+    elapsed = time.time() - start
+    print(f"done ({elapsed:.2f}s){' — ' + detail if detail else ''}")
+
+# 1. Enrich vocab (scraped → enriched via kuroshiro + overrides)
+s = step("Enriching vocab")
+result = subprocess.run(['node', 'scripts/enrich_vocab.mjs'], capture_output=True, text=True)
 if result.returncode != 0:
-    print("TypeScript errors:")
+    print("FAILED")
     print(result.stdout + result.stderr)
     sys.exit(1)
-print("  Type check passed.")
+# Extract detail from enrich output (e.g. "Enriched 2325 words (1 overrides).")
+enrich_detail = result.stdout.strip().lstrip()
+done(s, enrich_detail)
 
-# 2. Bundle with esbuild
-print("Running esbuild...")
+# 2. Type check
+s = step("Type checking")
+result = subprocess.run(['npx', 'tsc', '--noEmit'], capture_output=True, text=True)
+if result.returncode != 0:
+    print("FAILED")
+    print(result.stdout + result.stderr)
+    sys.exit(1)
+done(s)
+
+# 3. Bundle with esbuild
+s = step("Bundling JS")
 result = subprocess.run([
     'npx', 'esbuild', 'src/app.ts',
     '--bundle', '--minify', '--format=iife',
     '--target=es2020',
 ], capture_output=True, text=True)
 if result.returncode != 0:
-    print("esbuild errors:")
+    print("FAILED")
     print(result.stderr)
     sys.exit(1)
 app_js = result.stdout
 app_kb = len(app_js.encode('utf-8')) / 1024
-print(f"  Bundled JS: {app_kb:.1f} KB")
+done(s, f"{app_kb:.1f} KB")
 
-# 3. Prepare vocab data (columnar format for smaller JSON)
-with open('vocab_data.json', 'r') as f:
+# 4. Prepare vocab data (columnar format for smaller JSON)
+with open('data/enriched/vocab_data.json', 'r') as f:
     vocab = json.load(f)
 
 AUDIO_PREFIX = 'https://d1vq87e9lcf771.cloudfront.net/'
@@ -63,8 +88,8 @@ columnar = {
 
 vocab_json = json.dumps(columnar, ensure_ascii=False, separators=(',', ':'))
 
-# 4. Read template, embed JS + vocab
-with open('index.html', 'r') as f:
+# 5. Read template, embed JS + vocab
+with open('src/template.html', 'r') as f:
     html = f.read()
 
 output = html.replace('APP_JS_PLACEHOLDER', app_js)
@@ -75,6 +100,7 @@ with open('jp-flashcards.html', 'w') as f:
 
 size_kb = len(output.encode('utf-8')) / 1024
 data_kb = len(vocab_json.encode('utf-8')) / 1024
+total = time.time() - t0
 print(f"\nBuilt jp-flashcards.html ({size_kb:.0f} KB, JS: {app_kb:.1f} KB, data: {data_kb:.0f} KB)")
-print(f"Words: {len(vocab['words'])}")
-print(f"Skills: {len(vocab['skills'])}")
+print(f"Words: {len(vocab['words'])}, Skills: {len(vocab['skills'])}")
+print(f"Total: {total:.2f}s")
