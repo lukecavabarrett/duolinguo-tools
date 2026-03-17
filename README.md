@@ -82,6 +82,6 @@ This naturally handles edge cases:
 
 ## Bugs
 - ~~after a skill reach 70%, we cannot practice it further, so we will never reach 100%.~~ ✓ — new words capped at half remaining session slots; reinforcement from past skills fills the rest
-- similarily, when practicing a specific skill, we cannot pick a mastered one
+- ~~similarily, when practicing a specific skill, we cannot pick a mastered one~~ ✓ — reinforcement pool now includes strong-but-not-due words
 - ~~typing issues - pasupoto, juichi.~~ ✓
 - ~~kana issues - o'clock is rendered into kana as "toki" when it should be ji.~~ ✓ — switched to wanakana (romaji → kana) with kuroshiro fallback
