@@ -899,10 +899,28 @@ function tplProgress() {
     const isNext = i === level + 1;
     const opacity = mastered || isNext ? '' : 'opacity:.4';
     const label = mastered ? ' ✓' : '';
-    return `<div class="skill-row" style="${opacity}">
-      <span class="skill-name">${i + 1}. ${esc(skill)}${label}</span>
-      <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
-      <span class="skill-pct">${pct}%</span>
+    return `<div class="skill-group" style="${opacity}">
+      <div class="skill-row" style="cursor:pointer" data-skill-idx="${i}">
+        <span class="skill-name">${i + 1}. ${esc(skill)}${label}</span>
+        <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
+        <span class="skill-pct">${pct}%</span>
+      </div>
+      <div class="skill-words" id="skill-words-${i}" style="display:none">
+        ${skillWords.map(w => {
+          const str = Math.round(wordStrength(w) * 100);
+          const h = S.history[cardId(w)];
+          const seen = h ? h.seen : 0;
+          const correct = h ? h.correct : 0;
+          const kanaHint = w.kana && w.kana !== w.jp ? ` <span class="word-kana">(${esc(w.kana)})</span>` : '';
+          return `<div class="word-row">
+            <span class="word-jp">${esc(w.jp)}${kanaHint}</span>
+            <span class="word-en">${esc(w.en[0])}</span>
+            <span class="word-stats">${seen > 0 ? `${correct}/${seen}` : '—'}</span>
+            <div class="word-bar-wrap"><div class="skill-bar-fill" style="width:${str}%"></div></div>
+            <span class="skill-pct">${str}%</span>
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
   }).join('');
 
@@ -1099,6 +1117,21 @@ function bind(): void {
 
   if (S.screen === 'progress') {
     $('btn-prog-back')?.addEventListener('click', () => { S.screen = 'profile'; render(); });
+    document.querySelectorAll('.skill-row[data-skill-idx]').forEach(row => {
+      row.addEventListener('click', () => {
+        const idx = row.getAttribute('data-skill-idx')!;
+        const panel = document.getElementById(`skill-words-${idx}`);
+        if (!panel) return;
+        const opening = panel.style.display === 'none';
+        // Close any currently open panel
+        document.querySelectorAll('.skill-words').forEach(p => (p as HTMLElement).style.display = 'none');
+        document.querySelectorAll('.skill-row.expanded').forEach(r => r.classList.remove('expanded'));
+        if (opening) {
+          panel.style.display = 'flex';
+          row.classList.add('expanded');
+        }
+      });
+    });
   }
 }
 
