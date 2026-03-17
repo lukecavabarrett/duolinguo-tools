@@ -327,7 +327,7 @@ function selectCards(deck: Word[]): Word[] {
   const weak = deck.filter(card => {
     const h = S.history[cardId(card)];
     return h && h.seen > 0 && wordStrength(card) < 0.7;
-  }).sort((a, b) => wordStrength(a) - wordStrength(b));
+  }).sort((a, b) => wordStrength(a) - wordStrength(b) || Math.random() - 0.5);
 
   // 2. Due words — strong but interval expired
   const due = deck.filter(card => {
@@ -335,7 +335,7 @@ function selectCards(deck: Word[]): Word[] {
     return h && h.seen > 0 && wordStrength(card) >= 0.7 && now > h.due;
   }).sort((a, b) => {
     const ha = S.history[cardId(a)], hb = S.history[cardId(b)];
-    return (ha.due || 0) - (hb.due || 0); // most overdue first
+    return (ha.due || 0) - (hb.due || 0) || Math.random() - 0.5; // most overdue first
   });
 
   // 3. New words — unseen from deck (unlockAll) or from the next skill (progression)
@@ -349,7 +349,7 @@ function selectCards(deck: Word[]): Word[] {
   const reinforce = deck.filter(card => {
     const h = S.history[cardId(card)];
     return h && h.seen > 0 && wordStrength(card) >= 0.7 && now <= h.due;
-  }).sort((a, b) => wordStrength(a) - wordStrength(b));
+  }).sort((a, b) => wordStrength(a) - wordStrength(b) || Math.random() - 0.5);
 
   const session: Word[] = [];
   const used = new Set<string>();
