@@ -661,7 +661,7 @@ function tplSettings() {
     <div class="app-info">
       ${wordCount} words · ${skillCount} skills<br>
       App size: ${appKB} KB · Saved data: ${lsKB} KB<br>
-      v1.0
+      ${(window as any).__VERSION__ || 'dev'}
     </div>
   </div>`;
 }

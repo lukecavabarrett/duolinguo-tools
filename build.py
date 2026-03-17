@@ -92,8 +92,11 @@ vocab_json = json.dumps(columnar, ensure_ascii=False, separators=(',', ':'))
 with open('src/template.html', 'r') as f:
     html = f.read()
 
+git_hash = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip() or 'dev'
+
 output = html.replace('APP_JS_PLACEHOLDER', app_js)
 output = output.replace('VOCAB_DATA_PLACEHOLDER', vocab_json)
+output = output.replace('GIT_VERSION_PLACEHOLDER', git_hash)
 
 with open('jp-flashcards.html', 'w') as f:
     f.write(output)
