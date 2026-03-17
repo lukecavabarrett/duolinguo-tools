@@ -813,8 +813,10 @@ function tplProgress() {
   const rows = DATA.skills.map((skill, i) => {
     const skillWords = DATA.words.filter(w => w.skill === skill);
     if (!skillWords.length) return '';
-    const avg = skillWords.reduce((sum, w) => sum + wordStrength(w), 0) / skillWords.length;
-    const pct = Math.round(avg * 100);
+    const strengths = skillWords.map(w => wordStrength(w));
+    const avg = strengths.reduce((a, b) => a + b, 0) / strengths.length;
+    const min = Math.min(...strengths);
+    const pct = Math.round((0.7 * avg + 0.3 * min) * 100);
     const mastered = i <= level;
     const isNext = i === level + 1;
     const opacity = mastered || isNext ? '' : 'opacity:.4';
