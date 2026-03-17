@@ -76,7 +76,9 @@ This naturally handles edge cases:
 - ~~**Improved progress algorithm**~~ ✓ — strength-based progression with automatic skill unlocking
 - ~~**Layout**~~ ✓ - the continue button should not move the rest of the content up
 - ~~**Can't listen now**~~ ✓ — tap to skip all audio exercises for the rest of the session
-- **Settings** - rather than keep adding buttons to homepage (reset progress, info etc) we should organizing those in a smarter way that does not overcrowd the homepage.
+- ~~**Settings**~~ ✓ — dedicated settings screen with back navigation, replaces homepage button clutter
 - **Stories** - This feature is large and for the future. Using https://duome.eu/stories/en/ja to add 2 features: sentences and stories.
-- **Unit-specific practice** - maybe I'd like to have the option to practice a specific unit
-- **Feedback** - incorporate https://www.myinstants.com/en/instant/duolingo-5-correct-answers-41764/ for 5 correct in a row, maybe with a nice animation
+- ~~**Unit-specific practice**~~ ✓ — "Unit only" toggle to practice a single skill
+- ~~**Feedback**~~ ✓ — Duolingo 5-correct-answers sound + streak banner animation
+- **Fonts** - when selecting among jp options, use a nicer font
+- **Skill progression** - change formula to compute skill percentage to make it more gradual
