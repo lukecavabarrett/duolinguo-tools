@@ -76,7 +76,6 @@ export interface AppState {
   choices: string[];
   selectedChoice: number | null;
   settings: Settings;
-  _keyHandler: ((e: KeyboardEvent) => void) | null;
   _recentTypes: string[];
   noAudio: boolean;
   practiceScope: string;

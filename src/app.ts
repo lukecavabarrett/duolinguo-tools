@@ -454,7 +454,6 @@ const S: AppState = {
   history: {},
   choices: [],
   selectedChoice: null,
-  _keyHandler: null,
   _recentTypes: [],
   noAudio: false,
   practiceScope: 'all',
@@ -1026,14 +1025,7 @@ function bind(): void {
         document.querySelectorAll('.choice-btn').forEach((btn, i) => {
           btn.addEventListener('click', () => submitChoice(i));
         });
-        S._keyHandler = e => {
-          const map: Record<string, number> = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
-          const idx = map[e.key.toLowerCase()];
-          if (idx !== undefined && !S.answered) submitChoice(idx);
-        };
-        document.addEventListener('keydown', S._keyHandler);
       } else {
-        if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
         $('btn-next')?.addEventListener('click', next);
         document.addEventListener('keydown', function onE(e) {
           if (e.key === 'Enter') { document.removeEventListener('keydown', onE); next(); }
@@ -1061,7 +1053,6 @@ function bind(): void {
 //  ACTIONS
 // ══════════════════════════════════════════════════════
 function startSession(deck: Word[], distractorPool?: Word[]): void {
-  if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
   S.practiceDeck = deck;
   S.deck = distractorPool || deck;
   S.cards = selectCards(deck);
@@ -1190,7 +1181,6 @@ function animateCard(ok: boolean | null): void {
 }
 
 function next() {
-  if (S._keyHandler) { document.removeEventListener('keydown', S._keyHandler); S._keyHandler = null; }
   S.idx++;
   S.answered = false;
   S.lastCorrect = null;
