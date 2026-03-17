@@ -479,6 +479,21 @@ function render(partial?: string): void {
     bind();
     return;
   }
+  if (partial === 'next') {
+    // Update header in-place (progress bar animates via CSS transition)
+    const header = document.querySelector('.study-header');
+    if (header) header.outerHTML = tplStudyHeader();
+    // Re-render card body with animation
+    const body = document.querySelector('.study-body');
+    if (body) {
+      body.innerHTML = cardTop() + (S.exerciseType.mode === 'choice' ? tplChoices() : tplType());
+      body.classList.remove('anim');
+      void (body as HTMLElement).offsetWidth; // force reflow
+      body.classList.add('anim');
+    }
+    bind();
+    return;
+  }
   switch (S.screen) {
     case 'profile':  app.innerHTML = tplProfile(); break;
     case 'study':    app.innerHTML = tplStudy(); break;
@@ -718,7 +733,6 @@ function rubyWord(jp: string, kana: string): string {
 function cardTop() {
   const card = S.cards[S.idx];
   const et = S.exerciseType;
-  const pct = (S.idx / Math.max(S.cards.length, 1)) * 100;
   const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
   const isReverse = et.direction === 'en2jp';
   const isAudio = et.audioOnly;
@@ -740,11 +754,6 @@ function cardTop() {
   const showRomajiArea = !isReverse && !isAudio && card.romaji;
 
   return `
-    <div class="study-header">
-      <button class="btn-close" id="btn-quit">✕</button>
-      <div class="prog-bar-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
-      <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
-    </div>
     <div class="${cardCls}" id="flashcard">
       ${isAudio ? `
         <div style="text-align:center;padding:1rem 0">
@@ -786,8 +795,18 @@ function wordInfoBanner(card: Word, exerciseType: ExerciseType, correct = false)
   </div>`;
 }
 
+function tplStudyHeader() {
+  const pct = (S.idx / Math.max(S.cards.length, 1)) * 100;
+  return `
+    <div class="study-header">
+      <button class="btn-close" id="btn-quit">✕</button>
+      <div class="prog-bar-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
+    </div>`;
+}
+
 function tplStudy() {
-  return `<div class="screen anim">${cardTop()}${S.exerciseType.mode === 'choice' ? tplChoices() : tplType()}</div>`;
+  return `<div class="screen">${tplStudyHeader()}<div class="study-body anim">${cardTop()}${S.exerciseType.mode === 'choice' ? tplChoices() : tplType()}</div></div>`;
 }
 
 function tplType() {
@@ -1233,7 +1252,7 @@ function next() {
   }
   S.exerciseType = pickExerciseType(S.cards[S.idx]);
   if (S.exerciseType.mode === 'choice') S.choices = buildChoices(S.cards[S.idx], S.deck, S.exerciseType.direction);
-  render();
+  render('next');
 }
 
 // ══════════════════════════════════════════════════════
