@@ -734,7 +734,8 @@ function rubyWord(jp: string, kana: string): string {
 function cardTop() {
   const card = S.cards[S.idx];
   const et = S.exerciseType;
-  const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
+  const isNew = !S.history[cardId(card)]?.seen;
+  const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '') + (isNew ? ' new-word' : '');
   const isReverse = et.direction === 'en2jp';
   const isAudio = et.audioOnly;
 
@@ -756,6 +757,7 @@ function cardTop() {
 
   return `
     <div class="${cardCls}" id="flashcard">
+      ${isNew ? '<span class="new-badge">NEW</span>' : ''}
       ${isAudio ? `
         <div style="text-align:center;padding:1rem 0">
           <div class="audio-viz" id="audio-viz">
