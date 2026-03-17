@@ -1062,7 +1062,7 @@ function bind(): void {
       if (!S.answered) {
         $('btn-check')?.addEventListener('click', submitType);
         $('btn-skip')?.addEventListener('click', skipCard);
-        ans?.addEventListener('keydown', e => { if (e.key === 'Enter' && ans.value.trim()) { S.currentAnswer = ans.value; submitType(); } });
+        ans?.addEventListener('keydown', e => { if (e.key === 'Enter' && ans.value.trim()) { e.stopPropagation(); S.currentAnswer = ans.value; submitType(); } });
         ans?.addEventListener('input', e => {
           S.currentAnswer = (e.target as HTMLInputElement).value;
           const btn = $('btn-check') as HTMLButtonElement | null;
