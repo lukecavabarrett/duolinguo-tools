@@ -1093,7 +1093,7 @@ function fuzzyNorm(s: string): string {
   let r = s.trim().toLowerCase().replace(/['']/g, "'").replace(/[.!?,;:]+$/, '');
   const st = S.settings;
   if (st.ignoreHyphens) r = r.replace(/[-\s]+/g, '');
-  if (st.macronVowels) r = r.replace(/ā/g,'aa').replace(/ī/g,'ii').replace(/ū/g,'uu').replace(/ē/g,'ee').replace(/ō/g,'ou');
+  if (st.macronVowels) r = r.replace(/ā/g,'a').replace(/ī/g,'i').replace(/ū/g,'u').replace(/ē/g,'e').replace(/ō/g,'o');
   if (st.romajiVariants) {
     r = r.replace(/sya/g,'sha').replace(/syu/g,'shu').replace(/syo/g,'sho');
     r = r.replace(/tya/g,'cha').replace(/tyu/g,'chu').replace(/tyo/g,'cho');
