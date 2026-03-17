@@ -337,10 +337,12 @@ function selectCards(deck: Word[]): Word[] {
     return (ha.due || 0) - (hb.due || 0); // most overdue first
   });
 
-  // 3. New words — unseen, from the next skill to learn
-  const newWords = nextSkill
-    ? DATA.words.filter(w => w.skill === nextSkill && !S.history[cardId(w)]?.seen)
-    : [];
+  // 3. New words — unseen from deck (unlockAll) or from the next skill (progression)
+  const newWords = S.settings.unlockAll
+    ? deck.filter(card => !S.history[cardId(card)]?.seen)
+    : nextSkill
+      ? DATA.words.filter(w => w.skill === nextSkill && !S.history[cardId(w)]?.seen)
+      : [];
 
   // 4. Reinforcement — strong words not yet due, for extra practice (lowest strength first)
   const reinforce = deck.filter(card => {
