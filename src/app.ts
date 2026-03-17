@@ -670,11 +670,43 @@ function hasKanji(s: string): boolean {
 }
 
 function rubyWord(jp: string, kana: string): string {
-  // If word has kanji and kana differs, wrap in ruby annotation
-  if (hasKanji(jp) && kana && kana !== jp) {
+  if (!hasKanji(jp) || !kana || kana === jp) return esc(jp);
+
+  // Split jp into alternating kanji / non-kanji segments
+  const segments = jp.match(/[\u4e00-\u9fff\u3005]+|[^\u4e00-\u9fff\u3005]+/g);
+  if (!segments || segments.length === 1) {
     return `<ruby>${esc(jp)}<rp>(</rp><rt>${esc(kana)}</rt><rp>)</rp></ruby>`;
   }
-  return esc(jp);
+
+  // Use non-kanji segments as anchors to split the kana reading.
+  // e.g. 新しい → [新, しい] + あたらしい → 新(あたら) + しい
+  // e.g. お母さん → [お, 母, さん] + おかあさん → お + 母(かあ) + さん
+  let remaining = kana;
+  let html = '';
+  for (const seg of segments) {
+    if (!hasKanji(seg)) {
+      // Non-kanji anchor: everything before it in remaining is the preceding kanji's reading
+      const idx = remaining.indexOf(seg);
+      if (idx === -1) {
+        return `<ruby>${esc(jp)}<rp>(</rp><rt>${esc(kana)}</rt><rp>)</rp></ruby>`;
+      }
+      if (idx > 0) {
+        // There must be a preceding kanji segment — emit it with the consumed reading
+        html += `<rt>${esc(remaining.slice(0, idx))}</rt><rp>)</rp></ruby>`;
+      }
+      html += esc(seg);
+      remaining = remaining.slice(idx + seg.length);
+    } else {
+      // Kanji segment: open a ruby tag, reading will be filled by next anchor or end
+      html += `<ruby>${esc(seg)}<rp>(</rp>`;
+    }
+  }
+  // If word ends with kanji, close with remaining kana
+  if (hasKanji(segments[segments.length - 1])) {
+    html += `<rt>${esc(remaining)}</rt><rp>)</rp></ruby>`;
+  }
+
+  return html;
 }
 
 function cardTop() {
@@ -734,9 +766,7 @@ function cardTop() {
 
 function wordInfoBanner(card: Word, exerciseType: ExerciseType): string {
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
-  const jpHtml = hasKanji(card.jp) && card.kana && card.kana !== card.jp
-    ? `<ruby>${esc(card.jp)}<rp>(</rp><rt>${esc(card.kana)}</rt><rp>)</rp></ruby>`
-    : esc(card.jp);
+  const jpHtml = rubyWord(card.jp, card.kana);
   const dir = exerciseType ? exerciseType.direction : null;
   const isAudio = exerciseType ? exerciseType.audioOnly : false;
   const showJp = dir !== 'jp2en' || isAudio;
