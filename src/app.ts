@@ -461,7 +461,7 @@ const S: AppState = {
   practiceScope: 'all',
   _streak: 0,
   practiceDeck: [],
-  settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false, unlockAll: false },
+  settings: { macronVowels: true, ignoreHyphens: true, romajiVariants: false, showRomaji: false, unlockAll: false, alwaysShowInfo: false },
 };
 
 // ══════════════════════════════════════════════════════
@@ -636,6 +636,10 @@ function tplSettings() {
         <div><div class="toggle-label">Show romaji by default</div><div class="toggle-sub">${st.showRomaji ? 'Visible on every card' : 'Tap the word to reveal'}</div></div>
         ${tog('showRomaji', st.showRomaji)}
       </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Show info on correct answers</div><div class="toggle-sub">${st.alwaysShowInfo ? 'Word details shown after every answer' : 'Only shown on incorrect answers'}</div></div>
+        ${tog('alwaysShowInfo', st.alwaysShowInfo)}
+      </div>
     </div>
 
     <div class="field">
@@ -766,13 +770,13 @@ function cardTop() {
     </div>`;
 }
 
-function wordInfoBanner(card: Word, exerciseType: ExerciseType): string {
+function wordInfoBanner(card: Word, exerciseType: ExerciseType, correct = false): string {
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
   const jpHtml = rubyWord(card.jp, card.kana);
   const dir = exerciseType ? exerciseType.direction : null;
   const isAudio = exerciseType ? exerciseType.audioOnly : false;
   const showJp = dir !== 'jp2en' || isAudio;
-  return `<div class="word-info-banner">
+  return `<div class="word-info-banner${correct ? ' wib-correct' : ''}">
     ${showJp ? `<div class="wib-row">
       <span class="wib-jp">${jpHtml}</span>
       <button class="wib-play" id="btn-wib-play">${speakerSvg}</button>
@@ -801,7 +805,7 @@ function tplType() {
 
   const fb = S.answered
     ? (S.lastCorrect
-      ? `<div class="feedback c">Correct!</div>`
+      ? `<div class="feedback c">Correct!</div>${S.settings.alwaysShowInfo ? wordInfoBanner(card, S.exerciseType, true) : ''}`
       : `<div class="feedback w">Incorrect</div>${wordInfoBanner(card, S.exerciseType)}`)
     : '<div class="feedback"></div>';
 
@@ -836,7 +840,7 @@ function tplChoices() {
         ${esc(display)}
       </button>`;
     }).join('')}
-    ${S.answered && !S.lastCorrect ? wordInfoBanner(S.cards[S.idx], S.exerciseType) : ''}
+    ${S.answered && (!S.lastCorrect || S.settings.alwaysShowInfo) ? wordInfoBanner(S.cards[S.idx], S.exerciseType, !!S.lastCorrect) : ''}
     ${S.answered ? `<button class="btn-next" id="btn-next" style="margin-top:.4rem">${S.idx + 1 < S.cards.length ? 'CONTINUE' : 'FINISH'}</button>` : ''}
   </div>`;
 }
@@ -986,6 +990,7 @@ function bind(): void {
         const sub = el.parentElement?.querySelector('.toggle-sub');
         if (key === 'showRomaji' && sub) sub.textContent = S.settings[key] ? 'Visible on every card' : 'Tap the word to reveal';
         if (key === 'unlockAll' && sub) sub.textContent = S.settings[key] ? 'Manual skill selection enabled' : 'Skills unlock as you learn';
+        if (key === 'alwaysShowInfo' && sub) sub.textContent = S.settings[key] ? 'Word details shown after every answer' : 'Only shown on incorrect answers';
         saveState();
       });
     });

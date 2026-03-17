@@ -54,6 +54,7 @@ export interface Settings {
   romajiVariants: boolean;
   showRomaji: boolean;
   unlockAll: boolean;
+  alwaysShowInfo: boolean;
 }
 
 export interface AppState {
