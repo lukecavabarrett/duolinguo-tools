@@ -45,6 +45,37 @@ function parseVocabData(parsed: any): VocabData {
 const SESSION_SIZE = 15;
 
 // ══════════════════════════════════════════════════════
+//  SKILL CLUSTERS (for smarter distractor selection)
+// ══════════════════════════════════════════════════════
+const SKILL_CLUSTERS: Record<string, string> = {};
+function _cluster(tag: string, ...skills: string[]) {
+  for (const s of skills) SKILL_CLUSTERS[s] = tag;
+}
+_cluster('food', 'Cafe', 'Mealtime', 'Restaurant', 'Restaur. 2', 'Restaur.3', 'Restaurant 1', 'Restaurant 2', 'Restaurant 3', 'Pastries', 'Cooking', 'Cooking 1', 'Cooking 2', 'Cooking 3', 'Cooking 4', 'Cooking 5', 'Food', 'Food 2', 'Food 3', 'Seafood', 'Conbini', 'Convenience Store');
+_cluster('clothes', 'Clothes', 'Clothes 1', 'Clothes 2', 'Clothes3', 'Clothes 3', 'Clothes 4', 'Shopping 1', 'Shopping 2');
+_cluster('travel', 'Travel', 'Travel 2', 'Transport', 'Transportation 1', 'Transportation 2', 'Transportation 4', 'Station', 'Station 2', 'Sights', 'Directions', 'Direction 2', 'Direction 4', 'The Airport', 'The Train', 'Cruise', 'Hotel', 'Hotel 2', 'Hotel 3', 'Ryokan', 'Vacation', 'Past Trip');
+_cluster('nature', 'Weather', 'Weather 1', 'Weather 2', 'Weather 3', 'Seasons', 'Four Seasons', 'Nature 1', 'Nature 2', 'Nature 3', 'Nature 4', 'Nature 5', 'Nature 6', 'Nature 7', 'Outdoors', 'Sakura');
+_cluster('people', 'People', 'People 2', 'People 3', 'My Family', 'Family 2', 'Family 3', 'Family 4', 'Neighbors', 'New Friend', 'Meet Up', 'Growing Up');
+_cluster('school', 'School', 'University', 'Univ.2', 'College', 'College 2', 'Classroom', 'Classroom 2', 'Classroom 3', 'Education', 'Education 2', 'Education 3');
+_cluster('work', 'Occupation', 'Office', 'WorkPlace', 'Work 1', 'Work 2', 'Work 3', 'Work 4', 'Work 5');
+_cluster('health', 'Sick Day', 'Clinic', 'The Clinic', 'The Clinic 2', 'Doctor', 'The Dentist', 'Health 1', 'Health 2', 'Health 3', 'The Gym', 'Hair Salon');
+_cluster('home', 'New Home', 'New Home 2', 'Home 1', 'Home 3', 'Home 4', 'Chores');
+_cluster('hobbies', 'Hobbies', 'Hobbies 2', 'Hobby 1', 'Hobby 2', 'Hobby 3', 'Games', 'Events', 'Events 1', 'Concert', 'The Arts 1', 'The Arts 2', 'Bookstore', 'Theme Park', 'Olympic Games');
+_cluster('feelings', 'Feelings 1', 'Feelings 2', 'Feelings 3', 'Feelings 4', 'Feelings 5', 'Desires 1', 'Desires 2');
+_cluster('money', 'Money 1', 'Money 2', 'Money 3', 'Money 4');
+_cluster('time', 'Time', 'Dates', 'Routines', 'Routines 2', 'Weekend', 'Plans 1', 'Plans 2', 'Date Plans');
+_cluster('politics', 'Politics 1', 'Politics 2', 'Law 1', 'Law 2', 'Law 3', 'Society', 'Authority');
+_cluster('science', 'Computers', 'Tech 1', 'Tech 2', 'Science 1', 'Science 2', 'Science 3', 'Space');
+_cluster('places', 'Countries', 'In Town', 'The City', 'Geography 1', 'Geography 2', 'The Farm');
+_cluster('social', 'Greetings', 'Welcome', 'Introduction 3', 'Visiting', 'Birthday', 'Birthday 2', 'Wedding', 'Invitation', 'Gifts', 'Favors', 'Honorifics 1', 'Honorifics 3');
+_cluster('animals', 'AnimalCafe', 'Zoo', 'Animals');
+_cluster('conflict', 'Emergency', 'Emergency 1', 'Emergency 2', 'Conflict 1', 'Conflict 2');
+
+function getCluster(skill: string): string {
+  return SKILL_CLUSTERS[skill] || skill;
+}
+
+// ══════════════════════════════════════════════════════
 //  EXERCISE TYPES
 // ══════════════════════════════════════════════════════
 const EXERCISE_TYPES: ExerciseType[] = [
@@ -350,14 +381,16 @@ function buildChoices(correct: Word, deck: Word[], direction: string): string[] 
     if (correct.kana) correctSet.add(correct.kana.toLowerCase());
   }
 
-  // Prefer same-skill distractors
+  // Three-tier distractor priority: same skill → same cluster → any
   const others = deck.filter(c => cardId(c) !== cid);
-  const sameSkill = shuffle(others.filter(c => c.skill === correct.skill));
-  const otherSkill = shuffle(others.filter(c => c.skill !== correct.skill));
+  const correctCluster = getCluster(correct.skill);
+  const tier1 = shuffle(others.filter(c => c.skill === correct.skill));
+  const tier2 = shuffle(others.filter(c => c.skill !== correct.skill && getCluster(c.skill) === correctCluster));
+  const tier3 = shuffle(others.filter(c => getCluster(c.skill) !== correctCluster));
 
-  const distractors = [];
+  const distractors: string[] = [];
   const seen = new Set([correctAnswer.toLowerCase()]);
-  for (const c of [...sameSkill, ...otherSkill]) {
+  for (const c of [...tier1, ...tier2, ...tier3]) {
     if (distractors.length >= 3) break;
     const ans = getAnswer(c);
     const ansLower = ans.toLowerCase();
