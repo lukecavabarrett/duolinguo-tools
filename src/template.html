@@ -389,7 +389,17 @@
       height: 100%;
       background: var(--green);
       border-radius: 8px;
-      transition: width .4s ease;
+      transition: width .4s ease, background .4s ease;
+    }
+    .on-fire .prog-fill {
+      background: linear-gradient(90deg, #FF9500, #FF5E3A, #FF2D55);
+    }
+    .on-fire {
+      animation: firePulse 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes firePulse {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.15); }
     }
     .score-badge {
       font-size: .78rem;

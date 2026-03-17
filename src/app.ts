@@ -476,6 +476,8 @@ function render(partial?: string): void {
     if (el) el.outerHTML = S.exerciseType.mode === 'choice' ? tplChoices() : tplType();
     const badge = document.querySelector('.score-badge');
     if (badge) badge.innerHTML = `<span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span>`;
+    const bar = document.querySelector('.prog-bar-wrap');
+    if (bar) bar.classList.toggle('on-fire', S._streak >= 5);
     bind();
     return;
   }
@@ -800,7 +802,7 @@ function tplStudyHeader() {
   return `
     <div class="study-header">
       <button class="btn-close" id="btn-quit">✕</button>
-      <div class="prog-bar-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="prog-bar-wrap${S._streak >= 5 ? ' on-fire' : ''}"><div class="prog-fill" style="width:${pct}%"></div></div>
       <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
     </div>`;
 }
