@@ -98,12 +98,12 @@ output = html.replace('APP_JS_PLACEHOLDER', app_js)
 output = output.replace('VOCAB_DATA_PLACEHOLDER', vocab_json)
 output = output.replace('GIT_VERSION_PLACEHOLDER', git_hash)
 
-with open('jp-flashcards.html', 'w') as f:
+with open('index.html', 'w') as f:
     f.write(output)
 
 size_kb = len(output.encode('utf-8')) / 1024
 data_kb = len(vocab_json.encode('utf-8')) / 1024
 total = time.time() - t0
-print(f"\nBuilt jp-flashcards.html ({size_kb:.0f} KB, JS: {app_kb:.1f} KB, data: {data_kb:.0f} KB)")
+print(f"\nBuilt index.html ({size_kb:.0f} KB, JS: {app_kb:.1f} KB, data: {data_kb:.0f} KB)")
 print(f"Words: {len(vocab['words'])}, Skills: {len(vocab['skills'])}")
 print(f"Total: {total:.2f}s")

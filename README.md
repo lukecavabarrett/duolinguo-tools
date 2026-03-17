@@ -1,6 +1,6 @@
 # duolinguo-tools
 
-A self-contained HTML flashcard app for studying Japanese vocabulary from Duolingo. No server, no build step required to use — just open `jp-flashcards.html` in any browser (including Android Chrome).
+A self-contained HTML flashcard app for studying Japanese vocabulary from Duolingo. No server, no build step required to use — just open `index.html` in any browser.
 
 ## Features
 
@@ -26,7 +26,7 @@ A self-contained HTML flashcard app for studying Japanese vocabulary from Duolin
 
 ## Usage
 
-Open `jp-flashcards.html` in any browser. That's it.
+Open `index.html` in any browser. That's it.
 
 ## Building from source
 
@@ -35,7 +35,7 @@ npm install
 python3 build.py
 ```
 
-The build pipeline: enriches scraped vocab with kana readings (wanakana + kuroshiro), type-checks and bundles TypeScript, then embeds everything into `jp-flashcards.html`.
+The build pipeline: enriches scraped vocab with kana readings (wanakana + kuroshiro), type-checks and bundles TypeScript, then embeds everything into `index.html`.
 
 ## Progression algorithm
 
