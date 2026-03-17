@@ -1088,7 +1088,7 @@ function recordAnswer(card: Word, ok: boolean): void {
 }
 
 function fuzzyNorm(s: string): string {
-  let r = s.trim().toLowerCase().replace(/['']/g, "'");
+  let r = s.trim().toLowerCase().replace(/['']/g, "'").replace(/[.!?,;:]+$/, '');
   const st = S.settings;
   if (st.ignoreHyphens) r = r.replace(/[-\s]+/g, '');
   if (st.macronVowels) r = r.replace(/ā/g,'aa').replace(/ī/g,'ii').replace(/ū/g,'uu').replace(/ē/g,'ee').replace(/ō/g,'ou');
