@@ -43,6 +43,7 @@ function parseVocabData(parsed: any): VocabData {
 })();
 
 const SESSION_SIZE = 15;
+const STREAK_MILESTONE = 10;
 
 // ══════════════════════════════════════════════════════
 //  SKILL CLUSTERS (for smarter distractor selection)
@@ -476,8 +477,6 @@ function render(partial?: string): void {
     if (el) el.outerHTML = S.exerciseType.mode === 'choice' ? tplChoices() : tplType();
     const badge = document.querySelector('.score-badge');
     if (badge) badge.innerHTML = `<span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span>`;
-    const bar = document.querySelector('.prog-bar-wrap');
-    if (bar) bar.classList.toggle('on-fire', S._streak >= 5);
     bind();
     return;
   }
@@ -802,7 +801,7 @@ function tplStudyHeader() {
   return `
     <div class="study-header">
       <button class="btn-close" id="btn-quit">✕</button>
-      <div class="prog-bar-wrap${S._streak >= 5 ? ' on-fire' : ''}"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="prog-bar-wrap${S._streak >= STREAK_MILESTONE ? ' on-fire' : ''}"><div class="prog-fill" style="width:${pct}%"></div></div>
       <span class="score-badge"><span class="c">${S.correctCount}</span> / <span class="w">${S.wrongCount}</span></span>
     </div>`;
 }
@@ -1153,14 +1152,8 @@ function recordAnswer(card: Word, ok: boolean): void {
   h.due = Date.now() + h.interval * 86400000;
   saveState();
 
-  // Streak tracking
-  if (ok) { S._streak++; } else { S._streak = 0; }
-
   // Sound effect
-  if (ok && S._streak > 0 && S._streak % 5 === 0) {
-    const a = _streakAudio.cloneNode() as HTMLAudioElement; a.play().catch(() => {});
-    showStreakBanner(S._streak);
-  } else if (ok) playCorrectSound(); else playWrongSound();
+  if (ok) playCorrectSound(); else playWrongSound();
   // Haptic feedback on mobile
   try { navigator.vibrate?.(ok ? 30 : [50, 30, 50]); } catch(e) {}
 }
@@ -1224,12 +1217,26 @@ function skipCard() {
   animateCard(false);
 }
 
-function showStreakBanner(count: number): void {
-  const el = document.createElement('div');
-  el.className = 'streak-banner';
-  el.textContent = `🔥 ${count} in a row!`;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1700);
+function showStreakCelebration(count: number): void {
+  const body = document.querySelector('.study-body');
+  if (!body) { advanceCard(); return; }
+  body.innerHTML = `
+    <div class="streak-screen">
+      <div class="streak-fire">🔥</div>
+      <div class="streak-num">${count}</div>
+      <div class="streak-label">in a row!</div>
+    </div>`;
+  body.classList.remove('anim');
+  void (body as HTMLElement).offsetWidth;
+  body.classList.add('anim');
+  // Update header to show fire bar
+  const header = document.querySelector('.study-header');
+  if (header) header.outerHTML = tplStudyHeader();
+  // Dismiss on tap or after 2s (defer click listener to avoid catching the Continue click)
+  let dismissed = false;
+  const dismiss = () => { if (dismissed) return; dismissed = true; advanceCard(); };
+  setTimeout(() => body.addEventListener('click', dismiss, { once: true }), 50);
+  setTimeout(() => dismiss(), 2000);
 }
 
 function animateCard(ok: boolean | null): void {
@@ -1239,6 +1246,20 @@ function animateCard(ok: boolean | null): void {
 }
 
 function next() {
+  // Streak tracking (on continue press)
+  if (S.lastCorrect) { S._streak++; } else { S._streak = 0; }
+
+  // Streak milestone celebration
+  if (S._streak > 0 && S._streak % STREAK_MILESTONE === 0) {
+    const a = _streakAudio.cloneNode() as HTMLAudioElement; a.play().catch(() => {});
+    showStreakCelebration(S._streak);
+    return;
+  }
+
+  advanceCard();
+}
+
+function advanceCard() {
   S.idx++;
   S.answered = false;
   S.lastCorrect = null;
