@@ -281,6 +281,28 @@ def load_or_fetch_scraped_vocab(course: dict, force: bool) -> tuple[dict, dict, 
     return vocab, scrape_meta, True
 
 
+def course_config_detail(course: dict, explicit: bool) -> str:
+    if explicit:
+        return f"explicit ({Path('courses') / (course['courseId'] + '.json')})"
+    return f"synthesized default ({course['fromLang']} -> {course['toLang']})"
+
+
+def scrape_detail(course: dict, scrape_meta: dict, fetched: bool, forced: bool) -> str:
+    vocab_path = Path(course["inputVocabPath"])
+    if fetched:
+        reason = "forced refresh" if forced else "fresh scrape"
+        return f"{reason} -> {vocab_path} from {scrape_meta['url']}"
+    return f"reused cache {vocab_path}"
+
+
+def enrich_detail(course: dict) -> str:
+    output_path = Path(course["enrichedVocabPath"])
+    enrich_script = course.get("enrichScript")
+    if enrich_script:
+        return f"generated {output_path} via {enrich_script}"
+    return f"passthrough copy -> {output_path}"
+
+
 def hydrate_course_labels(course: dict, scrape_meta: dict, explicit: bool) -> dict:
     if explicit:
         return course
@@ -655,13 +677,12 @@ def main() -> None:
 
     raw_vocab, scrape_meta, fetched = load_or_fetch_scraped_vocab(course, args.force)
     course = hydrate_course_labels(course, scrape_meta, explicit_course)
-    if fetched:
-        print(
-            f"Loaded vocab cache... done ({time.time() - t0:.2f}s) — "
-            f"{len(raw_vocab['words'])} words, {len(raw_vocab['skills'])} skills from {scrape_meta['url']}"
-        )
+    print(f"Course config: {course_config_detail(course, explicit_course)}")
+    print(f"Scraped vocab: {scrape_detail(course, scrape_meta, fetched, args.force)}")
+    print(f"Source stats: {len(raw_vocab['words'])} words, {len(raw_vocab['skills'])} skills")
 
     vocab = build_runtime_vocab(course, raw_vocab)
+    print(f"Enriched vocab: {enrich_detail(course)}")
 
     s = step("Type checking")
     result = subprocess.run(["npx", "tsc", "--noEmit"], capture_output=True, text=True)
