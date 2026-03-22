@@ -13,11 +13,19 @@ import { getTargetPack } from './packs';
 
 const TARGET_PACK = getTargetPack(COURSE.targetPack);
 
+interface DeferredInstallPrompt {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
 // ══════════════════════════════════════════════════════
 //  DATA LOADING
 // ══════════════════════════════════════════════════════
 let DATA: VocabData = { skills: [], words: [] };
 let VOCAB_BYTES = 0;
+let DEFERRED_INSTALL_PROMPT: DeferredInstallPrompt | null = null;
+let INSTALL_AVAILABLE = false;
+let INSTALL_INSTALLED = false;
 
 function byteLength(text: string): number {
   return new TextEncoder().encode(text).length;
@@ -223,6 +231,54 @@ function canUseWordAudio(word: Word): boolean {
 
 function canPlayAudio(word: Word): boolean {
   return canUseWordAudio(word) || hasSpeechSynthesis();
+}
+
+function isStandaloneMode(): boolean {
+  return window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+}
+
+function isIosDevice(): boolean {
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  return /iPhone|iPad|iPod/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function shouldShowInstallHint(): boolean {
+  return location.protocol !== 'file:' && !INSTALL_INSTALLED;
+}
+
+function shouldShowIosInstallHint(): boolean {
+  return shouldShowInstallHint() && isIosDevice() && !INSTALL_AVAILABLE;
+}
+
+function installCtaHtml(): string {
+  if (INSTALL_AVAILABLE) {
+    return `<div class="field">
+      <div class="deck-info">Install this course for faster home-screen access and offline launch.</div>
+      <button class="btn btn-outline gap" id="btn-install">INSTALL APP</button>
+    </div>`;
+  }
+  if (shouldShowIosInstallHint()) {
+    return `<div class="field">
+      <div class="deck-info">On iPhone, use Share → Add to Home Screen for app-like offline access.</div>
+    </div>`;
+  }
+  return '';
+}
+
+async function triggerInstallPrompt(): Promise<void> {
+  if (!DEFERRED_INSTALL_PROMPT) return;
+  const prompt = DEFERRED_INSTALL_PROMPT;
+  DEFERRED_INSTALL_PROMPT = null;
+  INSTALL_AVAILABLE = false;
+  try {
+    await prompt.prompt();
+    const choice = await prompt.userChoice;
+    if (choice.outcome === 'accepted') INSTALL_INSTALLED = true;
+  } catch (error) {
+    console.warn('Install prompt failed', error);
+  }
+  render();
 }
 
 // ══════════════════════════════════════════════════════
@@ -740,6 +796,7 @@ function tplProfile() {
 
     <button class="btn btn-green" id="btn-start">START</button>
     <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
+    ${installCtaHtml()}
     <p class="note">Progress saved locally on this device.</p>
   </div>`;
 }
@@ -1105,6 +1162,7 @@ function bind(): void {
 
     $('btn-progress')?.addEventListener('click', () => { S.screen = 'progress'; render(); });
     $('btn-settings')?.addEventListener('click', () => { S.screen = 'settings'; render(); });
+    $('btn-install')?.addEventListener('click', () => { void triggerInstallPrompt(); });
   }
 
   if (S.screen === 'settings') {
@@ -1403,4 +1461,19 @@ function advanceCard() {
 //  INIT
 // ══════════════════════════════════════════════════════
 loadSaved();
+INSTALL_INSTALLED = isStandaloneMode();
+window.addEventListener('beforeinstallprompt', event => {
+  if (location.protocol === 'file:') return;
+  event.preventDefault();
+  DEFERRED_INSTALL_PROMPT = event as unknown as DeferredInstallPrompt;
+  INSTALL_AVAILABLE = true;
+  INSTALL_INSTALLED = false;
+  render();
+});
+window.addEventListener('appinstalled', () => {
+  DEFERRED_INSTALL_PROMPT = null;
+  INSTALL_AVAILABLE = false;
+  INSTALL_INSTALLED = true;
+  render();
+});
 render();
