@@ -911,12 +911,12 @@ function tplProgress() {
           const h = S.history[cardId(w)];
           const seen = h ? h.seen : 0;
           const correct = h ? h.correct : 0;
-          const kanaHint = w.kana && w.kana !== w.jp ? ` <span class="word-kana">(${esc(w.kana)})</span>` : '';
-          return `<div class="word-row">
-            <span class="word-jp">${esc(w.jp)}${kanaHint}</span>
-            <span class="word-en">${esc(w.en[0])}</span>
-            <span class="word-stats">${seen > 0 ? `${correct}/${seen}` : '—'}</span>
-            <div class="word-bar-wrap"><div class="skill-bar-fill" style="width:${str}%"></div></div>
+          const kanaHint = w.kana && w.kana !== w.jp ? ` <span class="skill-word-kana">(${esc(w.kana)})</span>` : '';
+          return `<div class="skill-word-row">
+            <span class="skill-word-jp">${esc(w.jp)}${kanaHint}</span>
+            <span class="skill-word-en">${esc(w.en[0])}</span>
+            <span class="skill-word-stats">${seen > 0 ? `${correct}/${seen}` : '—'}</span>
+            <div class="skill-word-bar-wrap"><div class="skill-bar-fill" style="width:${str}%"></div></div>
             <span class="skill-pct">${str}%</span>
           </div>`;
         }).join('')}
