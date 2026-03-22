@@ -19,5 +19,7 @@
   "inputVocabPath": "data/courses/en-ja/scraped/vocab_data.json",
   "enrichedVocabPath": "build/courses/en-ja/enriched/vocab_data.json",
   "clusterPath": "data/courses/en-ja/manual/skill_clusters.json",
+  "scrapeBehavior": "ja",
+  "packFormat": "legacy-ja",
   "enrichScript": "scripts/enrich_vocab.mjs"
 }
