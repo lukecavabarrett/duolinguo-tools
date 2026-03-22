@@ -25,6 +25,7 @@ JAPANESE_SCRAPE_BEHAVIOR = "ja"
 LANGUAGE_FLAGS = {
     "en": "🇺🇸",
     "es": "🇪🇸",
+    "el": "🇬🇷",
     "fr": "🇫🇷",
     "de": "🇩🇪",
     "it": "🇮🇹",
