@@ -1,0 +1,4006 @@
+[
+  {
+    "section": 0,
+    "units": [
+      {
+        "unit": 0,
+        "skill": "Basics",
+        "objective": "order food",
+        "cefr": "INTRO",
+        "words": [
+          "おちゃ",
+          "みず",
+          "ごはん",
+          "すし",
+          "ください",
+          "と",
+          "です"
+        ]
+      },
+      {
+        "unit": 1,
+        "skill": "People",
+        "objective": "describe people",
+        "cefr": "INTRO",
+        "words": [
+          "です",
+          "やさしい",
+          "いしゃ",
+          "せんせい",
+          "べんごし",
+          "かっこいい",
+          "がくせい",
+          "ひと"
+        ]
+      },
+      {
+        "unit": 2,
+        "skill": "Greetings",
+        "objective": "introduce yourself",
+        "cefr": "INTRO",
+        "words": [
+          "はな",
+          "けん",
+          "こんにちは",
+          "どうぞよろしく",
+          "です",
+          "さん",
+          "なおみ",
+          "こんばんは",
+          "またあした",
+          "じゃあね"
+        ]
+      },
+      {
+        "unit": 3,
+        "skill": "Cafe",
+        "objective": "order food and drink",
+        "cefr": "INTRO",
+        "words": [
+          "これ",
+          "は",
+          "ラーメン",
+          "カレー",
+          "おいしい",
+          "それ",
+          "ピザ",
+          "ケーキ",
+          "か",
+          "はい"
+        ]
+      },
+      {
+        "unit": 4,
+        "skill": "Countries",
+        "objective": "talk about countries",
+        "cefr": "INTRO",
+        "words": [
+          "にほん",
+          "アメリカ",
+          "おおきい",
+          "ちいさい",
+          "にほんじん",
+          "アメリカじん",
+          "カナダ",
+          "カナダじん",
+          "ブラジル",
+          "ブラジルじん"
+        ]
+      },
+      {
+        "unit": 5,
+        "skill": "Directions",
+        "objective": "ask for directions",
+        "cefr": "INTRO",
+        "words": [
+          "どこ",
+          "ホテル",
+          "コンビニ",
+          "ここ",
+          "デパート",
+          "バスてい",
+          "そこ",
+          "えき",
+          "だいがく"
+        ]
+      },
+      {
+        "unit": 6,
+        "skill": "Belongings",
+        "objective": "describe belongings",
+        "cefr": "INTRO",
+        "words": [
+          "わたしの",
+          "かさ",
+          "ぼうし",
+          "あかい",
+          "コート",
+          "くつ",
+          "しろい",
+          "これら",
+          "それら"
+        ]
+      },
+      {
+        "unit": 7,
+        "skill": "Neighbors",
+        "objective": "talk about neighbors",
+        "cefr": "INTRO",
+        "words": [
+          "たなか",
+          "なかやま",
+          "あかるい",
+          "この",
+          "かわいい",
+          "その",
+          "さん",
+          "おもしろい",
+          "やまぐち"
+        ]
+      },
+      {
+        "unit": 8,
+        "skill": "Time",
+        "objective": "tell time",
+        "cefr": "INTRO",
+        "words": [
+          "いち",
+          "に",
+          "さん",
+          "じ",
+          "です",
+          "一",
+          "二",
+          "三",
+          "なんじ",
+          "いま"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 1,
+    "units": [
+      {
+        "unit": 9,
+        "skill": "Travel",
+        "objective": "get help when traveling",
+        "cefr": "INTRO",
+        "words": [
+          "くうこう",
+          "ちかてつ",
+          "じゃないです",
+          "きっぷ",
+          "ちず",
+          "パスポート",
+          "スマホ",
+          "の",
+          "かばん",
+          "田中"
+        ]
+      },
+      {
+        "unit": 10,
+        "skill": "Welcome",
+        "objective": "get to know people",
+        "cefr": "A1",
+        "words": [
+          "おはようございます",
+          "私",
+          "ようこそ",
+          "おなまえは",
+          "はじめまして",
+          "しゅっしん",
+          "東京",
+          "ニューヨーク",
+          "も",
+          "にすんでいます"
+        ]
+      },
+      {
+        "unit": 11,
+        "skill": "My Family",
+        "objective": "describe your family",
+        "cefr": "A1",
+        "words": [
+          "父",
+          "母",
+          "いそがしい",
+          "エンジニア",
+          "かぞく",
+          "あね",
+          "いもうと",
+          "かいしゃいん",
+          "四",
+          "さい"
+        ]
+      },
+      {
+        "unit": 12,
+        "skill": "Hobbies",
+        "objective": "talk about hobbies",
+        "cefr": "A1",
+        "words": [
+          "テレビ",
+          "えいが",
+          "を",
+          "見ます",
+          "よく",
+          "サッカー",
+          "バスケットボール",
+          "ときどき",
+          "します",
+          "おんがく"
+        ]
+      },
+      {
+        "unit": 13,
+        "skill": "Mealtime",
+        "objective": "describe eating habits",
+        "cefr": "A1",
+        "words": [
+          "パン",
+          "サンドイッチ",
+          "たべます",
+          "まいにち",
+          "コーヒー",
+          "ジュース",
+          "のみます",
+          "まいあさ",
+          "に",
+          "あさごはん"
+        ]
+      },
+      {
+        "unit": 14,
+        "skill": "Clothes",
+        "objective": "shop for clothes",
+        "cefr": "A1",
+        "words": [
+          "古い",
+          "ふく",
+          "はちょっと",
+          "さいふ",
+          "ダサい",
+          "Tシャツ",
+          "新しい",
+          "スカート",
+          "ね",
+          "がほしいです"
+        ]
+      },
+      {
+        "unit": 15,
+        "skill": "Restaurant",
+        "objective": "order food and drink",
+        "cefr": "A1",
+        "words": [
+          "レストラン",
+          "ていしょく",
+          "てんぷら",
+          "うどん",
+          "を",
+          "じゃあ",
+          "ひとつ",
+          "ふたつ",
+          "あ",
+          "水"
+        ]
+      },
+      {
+        "unit": 16,
+        "skill": "Weekend",
+        "objective": "use present tense verbs",
+        "cefr": "A1",
+        "words": [
+          "しゅうまつ",
+          "は",
+          "およぎます",
+          "ひとりで",
+          "ドラマ",
+          "ともだち",
+          "と",
+          "あそびます",
+          "スポーツ",
+          "ヨガ"
+        ]
+      },
+      {
+        "unit": 17,
+        "skill": "Station",
+        "objective": "get around a station",
+        "cefr": "A1",
+        "words": [
+          "ありますか",
+          "ホーム",
+          "いっかい",
+          "かいさつ",
+          "あそこ",
+          "は",
+          "のりかえ",
+          "すみません",
+          "ありません",
+          "Atm"
+        ]
+      },
+      {
+        "unit": 18,
+        "skill": "Routines",
+        "objective": "describe your routine",
+        "cefr": "A1",
+        "words": [
+          "食べます",
+          "何時に",
+          "いつも",
+          "おきます",
+          "新聞",
+          "ラジオ",
+          "何時",
+          "ごろ",
+          "四時",
+          "まいしゅう"
+        ]
+      },
+      {
+        "unit": 19,
+        "skill": "New Friend",
+        "objective": "talk about interests",
+        "cefr": "A1",
+        "words": [
+          "エリカ",
+          "アンドリュー",
+          "ダニエル",
+          "こちら",
+          "と言います",
+          "かれし",
+          "言います",
+          "ちゅうごく",
+          "かんこく",
+          "ベトナム"
+        ]
+      },
+      {
+        "unit": 20,
+        "skill": "New Home",
+        "objective": "describe your home",
+        "cefr": "A1",
+        "words": [
+          "アパート",
+          "いえ",
+          "ひっこします",
+          "ひろい",
+          "まだ",
+          "せまい",
+          "あかるい",
+          "キッチン",
+          "リビング",
+          "があります"
+        ]
+      },
+      {
+        "unit": 21,
+        "skill": "Transport",
+        "objective": "take public transit",
+        "cefr": "A1",
+        "words": [
+          "でんしゃ",
+          "に",
+          "行きます",
+          "しぶや",
+          "えき",
+          "バス",
+          "よこはま",
+          "つぎ",
+          "ここ",
+          "あきはばら"
+        ]
+      },
+      {
+        "unit": 22,
+        "skill": "Sights",
+        "objective": "use na-adjectives",
+        "cefr": "A1",
+        "words": [
+          "ところ",
+          "きれい",
+          "にぎやか",
+          "しずか",
+          "ほんとうに",
+          "な",
+          "何ですか",
+          "あれ",
+          "おてら",
+          "たてもの"
+        ]
+      },
+      {
+        "unit": 23,
+        "skill": "Emergency",
+        "objective": "get emergency help",
+        "cefr": "A1",
+        "words": [
+          "だいじょうぶ",
+          "すわります",
+          "ぐあいがわるい",
+          "あぶない",
+          "きゅうきゅうしゃ",
+          "けいさつ",
+          "おねがいします",
+          "びょういん",
+          "何さい",
+          "でんわばんごう"
+        ]
+      },
+      {
+        "unit": 24,
+        "skill": "Weather",
+        "objective": "talk about weather",
+        "cefr": "A1",
+        "words": [
+          "あたたかい",
+          "こうえん",
+          "あめ",
+          "は",
+          "はる",
+          "てんき",
+          "あした",
+          "きょう",
+          "です",
+          "はれ"
+        ]
+      },
+      {
+        "unit": 25,
+        "skill": "Family 2",
+        "objective": "describe your family",
+        "cefr": "A1",
+        "words": [
+          "きょうだい",
+          "はいますか",
+          "います",
+          "おとうと",
+          "おとうとさん",
+          "が",
+          "あね",
+          "おねえさん",
+          "オーストラリア",
+          "日本ご"
+        ]
+      },
+      {
+        "unit": 26,
+        "skill": "Chores",
+        "objective": "discuss chores",
+        "cefr": "A1",
+        "words": [
+          "しごと",
+          "します",
+          "かじ",
+          "かえります",
+          "うち",
+          "の",
+          "あと",
+          "がっこう",
+          "しゅくだい",
+          "てつだいます"
+        ]
+      },
+      {
+        "unit": 27,
+        "skill": "Travel 2",
+        "objective": "say what you want to do",
+        "cefr": "A1",
+        "words": [
+          "来月",
+          "しましょうか",
+          "行きましょう",
+          "りょこう",
+          "フランス",
+          "ひこうき",
+          "チケット",
+          "買いましょう",
+          "スーツケース",
+          "会いましょう"
+        ]
+      },
+      {
+        "unit": 28,
+        "skill": "Visiting",
+        "objective": "discuss a family visit",
+        "cefr": "A1",
+        "words": [
+          "ごりょうしん",
+          "りょうしん",
+          "ロビー",
+          "会います",
+          "お父さん",
+          "来ます",
+          "金曜日",
+          "に",
+          "お母さん",
+          "日本りょうり"
+        ]
+      },
+      {
+        "unit": 29,
+        "skill": "Pastries",
+        "objective": "order pastries",
+        "cefr": "A1",
+        "words": [
+          "あまい",
+          "もの",
+          "行きましょうか",
+          "ケーキや",
+          "がだいすきです",
+          "はすきですか",
+          "おかしや",
+          "あの",
+          "その",
+          "買いましょうか"
+        ]
+      },
+      {
+        "unit": 30,
+        "skill": "Cooking",
+        "objective": "use negative verbs",
+        "cefr": "A1",
+        "words": [
+          "ひま",
+          "木曜日",
+          "つくりましょう",
+          "つくりましょうか",
+          "いっしょに",
+          "しょうゆ",
+          "卵",
+          "やさい",
+          "スーパー",
+          "もっと"
+        ]
+      },
+      {
+        "unit": 31,
+        "skill": "School",
+        "objective": "discuss classes",
+        "cefr": "A1",
+        "words": [
+          "せんせい",
+          "だれ",
+          "スペインご",
+          "きょうしつ",
+          "じゅぎょう",
+          "スミス",
+          "山田",
+          "こんしゅう",
+          "あります",
+          "たくさん"
+        ]
+      },
+      {
+        "unit": 32,
+        "skill": "Occupation",
+        "objective": "talk about jobs",
+        "cefr": "A1",
+        "words": [
+          "マネージャー",
+          "の",
+          "しごとします",
+          "かいしゃ",
+          "どうりょう",
+          "ほんやくか",
+          "としょかん",
+          "ほんやくします",
+          "じしょ",
+          "つかいます"
+        ]
+      },
+      {
+        "unit": 33,
+        "skill": "Theme Park",
+        "objective": "get around a theme park",
+        "cefr": "A1",
+        "words": [
+          "でかけましょう",
+          "ごご",
+          "はくぶつかん",
+          "つまらない",
+          "ゆうえんち",
+          "いりぐち",
+          "にゅうじょうりょう",
+          "おとな",
+          "の",
+          "三千"
+        ]
+      },
+      {
+        "unit": 34,
+        "skill": "Bookstore",
+        "objective": "discuss media",
+        "cefr": "A1",
+        "words": [
+          "本や",
+          "セール",
+          "cd",
+          "dvd",
+          "コーナー",
+          "読みません",
+          "あまり",
+          "フィクション",
+          "ノンフィクション",
+          "話"
+        ]
+      },
+      {
+        "unit": 35,
+        "skill": "Office",
+        "objective": "communicate at work",
+        "cefr": "A1",
+        "words": [
+          "何階",
+          "一階",
+          "よろしくおねがいします",
+          "ミーティング",
+          "うけつけ",
+          "何時",
+          "から",
+          "ごぜん",
+          "プリンター",
+          "トレーニング"
+        ]
+      },
+      {
+        "unit": 36,
+        "skill": "Hobbies 2",
+        "objective": "talk about hobbies",
+        "cefr": "A1",
+        "words": [
+          "何時間",
+          "れんしゅう",
+          "バドミントン",
+          "しあい",
+          "四時間",
+          "九時間",
+          "ギター",
+          "ピアノ",
+          "ひきます",
+          "がっき"
+        ]
+      },
+      {
+        "unit": 37,
+        "skill": "Events",
+        "objective": "discuss seasonal events",
+        "cefr": "A1",
+        "words": [
+          "あります",
+          "行きませんか",
+          "はなびたいかい",
+          "こんしゅうまつ",
+          "あそびませんか",
+          "おまつり",
+          "食べ物",
+          "八月",
+          "食べませんか",
+          "チョコバナナ"
+        ]
+      },
+      {
+        "unit": 38,
+        "skill": "Date Plans",
+        "objective": "talk about date plans",
+        "cefr": "A1",
+        "words": [
+          "人",
+          "たんじょうび",
+          "デート",
+          "げんき",
+          "やさしい",
+          "プレゼント",
+          "ネックレス",
+          "うでどけい",
+          "あおい",
+          "おしゃれ"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 2,
+    "units": [
+      {
+        "unit": 39,
+        "skill": "Station 2",
+        "objective": "take public transport",
+        "cefr": "A1",
+        "words": [
+          "のります",
+          "一ばん",
+          "モノレール",
+          "三百",
+          "きっぷうりば",
+          "ここ",
+          "二ばん",
+          "おります",
+          "オレンジ",
+          "かいそく"
+        ]
+      },
+      {
+        "unit": 40,
+        "skill": "University",
+        "objective": "discuss college life",
+        "cefr": "A1",
+        "words": [
+          "何年生",
+          "かい",
+          "サム",
+          "一年生",
+          "二年生",
+          "三年生",
+          "四年生",
+          "すうがく",
+          "せんこう",
+          "ビジネス"
+        ]
+      },
+      {
+        "unit": 41,
+        "skill": "AnimalCafe",
+        "objective": "count animals",
+        "cefr": "A1",
+        "words": [
+          "どうぶつ",
+          "カプチーノ",
+          "にんき",
+          "います",
+          "ねこ",
+          "パンケーキ",
+          "ハムスター",
+          "ちゃいろ",
+          "め",
+          "いっぴき"
+        ]
+      },
+      {
+        "unit": 42,
+        "skill": "Outdoors",
+        "objective": "discuss outdoor activities",
+        "cefr": "A1",
+        "words": [
+          "ハイキング",
+          "キャンプ",
+          "がいいです",
+          "バックパック",
+          "ほっかいどう",
+          "バーベキュー",
+          "ピクニック",
+          "します",
+          "一日",
+          "五月"
+        ]
+      },
+      {
+        "unit": 43,
+        "skill": "Food",
+        "objective": "eat in a restaurant",
+        "cefr": "A1",
+        "words": [
+          "たくさん",
+          "タピオカティー",
+          "ちゅうかりょうり",
+          "あきます",
+          "ちゅうかがい",
+          "二人",
+          "いらっしゃいませ",
+          "なんめいさま",
+          "つめたい",
+          "メニュー"
+        ]
+      },
+      {
+        "unit": 44,
+        "skill": "Hotel",
+        "objective": "communicate at a hotel",
+        "cefr": "A1",
+        "words": [
+          "二日",
+          "三日",
+          "とまりませんか",
+          "ネット",
+          "さがします",
+          "おねがいします",
+          "チェックイン",
+          "クレジットカード",
+          "かぎ",
+          "ばんごう"
+        ]
+      },
+      {
+        "unit": 45,
+        "skill": "Past Trip",
+        "objective": "use past tense verbs",
+        "cefr": "A1",
+        "words": [
+          "来ました",
+          "見ました",
+          "先月",
+          "きょねん",
+          "かぶき",
+          "ぶんか",
+          "先週",
+          "食べました",
+          "行きました",
+          "の"
+        ]
+      },
+      {
+        "unit": 46,
+        "skill": "Birthday",
+        "objective": "make transit plans",
+        "cefr": "A1",
+        "words": [
+          "まで",
+          "のります",
+          "円",
+          "家",
+          "いとこ",
+          "どうやって",
+          "とちゅうで",
+          "みち",
+          "ポテトチップス",
+          "フライドチキン"
+        ]
+      },
+      {
+        "unit": 47,
+        "skill": "Computers",
+        "objective": "shop for electronics",
+        "cefr": "A1",
+        "words": [
+          "もっと",
+          "ゲーミング",
+          "前",
+          "モニター",
+          "今日",
+          "インチ",
+          "安い",
+          "かるい",
+          "一万",
+          "キーボード"
+        ]
+      },
+      {
+        "unit": 48,
+        "skill": "Concert",
+        "objective": "express what you want to do at a concert",
+        "cefr": "A1",
+        "words": [
+          "行きたいです",
+          "今夜",
+          "アーティスト",
+          "にんき",
+          "会いたいです",
+          "すわりたい",
+          "に",
+          "ステージ",
+          "まんなか",
+          "でかけたいです"
+        ]
+      },
+      {
+        "unit": 49,
+        "skill": "College",
+        "objective": "talk about a college town",
+        "cefr": "A1",
+        "words": [
+          "こうこう",
+          "はいります",
+          "大学",
+          "いなか",
+          "そつぎょうします",
+          "れきし",
+          "先生",
+          "木",
+          "スタジアム",
+          "アメフト"
+        ]
+      },
+      {
+        "unit": 50,
+        "skill": "Clothes 2",
+        "objective": "shop for clothes",
+        "cefr": "A1",
+        "words": [
+          "ジーンズ",
+          "セーター",
+          "ボロボロ",
+          "くつした",
+          "この",
+          "まっすぐ",
+          "メンズ",
+          "パーカー",
+          "むらさき",
+          "まず"
+        ]
+      },
+      {
+        "unit": 51,
+        "skill": "Seasons",
+        "objective": "use negative adjectives",
+        "cefr": "A1",
+        "words": [
+          "住んでいます",
+          "の",
+          "さきます",
+          "四月",
+          "さくら",
+          "なつ",
+          "夜",
+          "あつくない",
+          "つけます",
+          "すいか"
+        ]
+      },
+      {
+        "unit": 52,
+        "skill": "Birthday 2",
+        "objective": "make plans for a party",
+        "cefr": "A1",
+        "words": [
+          "三月",
+          "四日",
+          "さいたま",
+          "になります",
+          "はたち",
+          "で",
+          "車",
+          "よびます",
+          "ゆうがた",
+          "前に"
+        ]
+      },
+      {
+        "unit": 53,
+        "skill": "Slow Day",
+        "objective": "describe what you don't want to do",
+        "cefr": "A1",
+        "words": [
+          "おきたくないです",
+          "まだ",
+          "ねむい",
+          "今",
+          "アラーム",
+          "から",
+          "でたくないです",
+          "ねたいです",
+          "ブランケット",
+          "外"
+        ]
+      },
+      {
+        "unit": 54,
+        "skill": "Meet Up",
+        "objective": "arrange to meet up",
+        "cefr": "A1",
+        "words": [
+          "しんじゅく",
+          "みんな",
+          "の",
+          "よてい",
+          "たくさんの",
+          "います",
+          "一分",
+          "でます",
+          "乗ります",
+          "今から"
+        ]
+      },
+      {
+        "unit": 55,
+        "skill": "Cruise",
+        "objective": "use the past tense",
+        "cefr": "A1",
+        "words": [
+          "しま",
+          "クルーズ",
+          "みなと",
+          "ふくおか",
+          "でした",
+          "ふね",
+          "まわります",
+          "に",
+          "みずぎ",
+          "ご飯"
+        ]
+      },
+      {
+        "unit": 56,
+        "skill": "Sakura",
+        "objective": "make plans to go to a festival",
+        "cefr": "A1",
+        "words": [
+          "花見をします",
+          "に",
+          "で",
+          "今週",
+          "もち",
+          "花見",
+          "電車",
+          "八分",
+          "わすれます",
+          "じこ"
+        ]
+      },
+      {
+        "unit": 57,
+        "skill": "Zoo",
+        "objective": "describe what you see in the zoo",
+        "cefr": "A1",
+        "words": [
+          "五日",
+          "パンダ",
+          "あかちゃん",
+          "週末",
+          "うえの",
+          "きりん",
+          "ところ",
+          "とり",
+          "あし",
+          "あります"
+        ]
+      },
+      {
+        "unit": 58,
+        "skill": "Sick Day",
+        "objective": "use past tense negative verbs",
+        "cefr": "A1",
+        "words": [
+          "かぜをひきます",
+          "ねつ",
+          "しませんでした",
+          "何も",
+          "の中で",
+          "雨",
+          "あらし",
+          "行きませんでした",
+          "休みます",
+          "電話します"
+        ]
+      },
+      {
+        "unit": 59,
+        "skill": "WorkPlace",
+        "objective": "discuss work issues",
+        "cefr": "A1",
+        "words": [
+          "よくない",
+          "やめたいです",
+          "今の",
+          "おそくまで",
+          "どうですか",
+          "オフィス",
+          "私たちの",
+          "こわれます",
+          "ひろくない",
+          "十階"
+        ]
+      },
+      {
+        "unit": 60,
+        "skill": "Gifts",
+        "objective": "talk about gifts you gave or received",
+        "cefr": "A1",
+        "words": [
+          "毎年",
+          "あげます",
+          "に",
+          "めい",
+          "えほん",
+          "おい",
+          "よろこびます",
+          "にんぎょう",
+          "タブレット",
+          "そぼ"
+        ]
+      },
+      {
+        "unit": 61,
+        "skill": "Ryokan",
+        "objective": "share travel experiences",
+        "cefr": "A1",
+        "words": [
+          "りょかん",
+          "むら",
+          "十一月",
+          "二日間",
+          "みずうみ",
+          "しずか",
+          "まわり",
+          "りっぱ",
+          "さんぽします",
+          "もり"
+        ]
+      },
+      {
+        "unit": 62,
+        "skill": "Clothes3",
+        "objective": "buy clothes",
+        "cefr": "A1",
+        "words": [
+          "ギフトカード",
+          "今週末",
+          "ブランド",
+          "シャツ",
+          "北",
+          "ショートパンツ",
+          "ポロシャツ",
+          "の",
+          "ボタン",
+          "サイズ"
+        ]
+      },
+      {
+        "unit": 63,
+        "skill": "College 2",
+        "objective": "describe a day at college",
+        "cefr": "A1",
+        "words": [
+          "年",
+          "りゅうがくします",
+          "ぶんがく",
+          "どこの大学",
+          "イタリア",
+          "かだい",
+          "レポート",
+          "毎朝",
+          "せいかつ",
+          "まあまあ"
+        ]
+      },
+      {
+        "unit": 64,
+        "skill": "Cooking 2",
+        "objective": "cook with someone",
+        "cefr": "A1",
+        "words": [
+          "昼ご飯",
+          "おなかがすきました",
+          "作ります",
+          "シチュー",
+          "たまねぎ",
+          "がいります",
+          "もいります",
+          "レシピ",
+          "じゃがいも",
+          "いくつ"
+        ]
+      },
+      {
+        "unit": 65,
+        "skill": "New Home 2",
+        "objective": "use past tense adjectives",
+        "cefr": "A1",
+        "words": [
+          "今月",
+          "東",
+          "たのしかった",
+          "だれの",
+          "もん",
+          "ひろかった",
+          "げんかん",
+          "おくさん",
+          "午後",
+          "スリッパ"
+        ]
+      },
+      {
+        "unit": 66,
+        "skill": "Clinic",
+        "objective": "describe health issues",
+        "cefr": "A1",
+        "words": [
+          "ちょっと",
+          "よやくを入れます",
+          "どうしましたか",
+          "クリニック",
+          "かぜ",
+          "入れます",
+          "痛い",
+          "先生",
+          "から",
+          "ねませんでした"
+        ]
+      },
+      {
+        "unit": 67,
+        "skill": "Hotel 2",
+        "objective": "complain about a hotel",
+        "cefr": "A1",
+        "words": [
+          "四日間",
+          "シャトルバス",
+          "こうこく",
+          "西",
+          "ゴミ",
+          "しずかじゃなかったです",
+          "カーテン",
+          "うすい",
+          "六階",
+          "ゴキブリ"
+        ]
+      },
+      {
+        "unit": 68,
+        "skill": "Growing Up",
+        "objective": "talk about your childhood",
+        "cefr": "A1",
+        "words": [
+          "とき",
+          "こうがい",
+          "ようちえん",
+          "あめ",
+          "えをかきます",
+          "小学生",
+          "すいえい",
+          "たいいく",
+          "ならいます",
+          "学校"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 3,
+    "units": [
+      {
+        "unit": 69,
+        "skill": "Bad Date",
+        "objective": "use past tense negative adjectives",
+        "cefr": "A1",
+        "words": [
+          "七日",
+          "さいあく",
+          "たのしくなかった",
+          "けんかします",
+          "今回",
+          "六月",
+          "おばけやしき",
+          "れつ",
+          "こわくなかった",
+          "こんでいました"
+        ]
+      },
+      {
+        "unit": 70,
+        "skill": "Doctor",
+        "objective": "describe health habits",
+        "cefr": "A1",
+        "words": [
+          "一回",
+          "よやく",
+          "おなか",
+          "のど",
+          "インフルエンザ",
+          "一日に",
+          "オレンジ",
+          "飲みます",
+          "にんじん",
+          "ヨーグルト"
+        ]
+      },
+      {
+        "unit": 71,
+        "skill": "Summer",
+        "objective": "suggest things to do at the beach",
+        "cefr": "A1",
+        "words": [
+          "海に行きます",
+          "八日",
+          "どこか",
+          "今週の",
+          "行きましょう",
+          "近い",
+          "ので",
+          "サングラス",
+          "ひやけどめ",
+          "いちばん近い"
+        ]
+      },
+      {
+        "unit": 72,
+        "skill": "Restaur. 2",
+        "objective": "discuss what to eat",
+        "cefr": "A1",
+        "words": [
+          "おごり",
+          "ようしょく",
+          "オムライス",
+          "どちらがいいですか",
+          "と",
+          "ファミレス",
+          "がいいです",
+          "ドリンクバー",
+          "ぶどう",
+          "あたたかい"
+        ]
+      },
+      {
+        "unit": 73,
+        "skill": "Wedding",
+        "objective": "describe a wedding",
+        "cefr": "A1",
+        "words": [
+          "六日",
+          "けっこんしき",
+          "リムジン",
+          "おととい",
+          "しんろう",
+          "花",
+          "色",
+          "かいじょう",
+          "デコレーション",
+          "カーペット"
+        ]
+      },
+      {
+        "unit": 74,
+        "skill": "Invitation",
+        "objective": "make plans to go out",
+        "cefr": "A1",
+        "words": [
+          "十日",
+          "かなしい",
+          "じょゆう",
+          "ジャンル",
+          "いけぶくろ",
+          "見に行きませんか",
+          "見たいです",
+          "学生",
+          "南",
+          "ゲームセンター"
+        ]
+      },
+      {
+        "unit": 75,
+        "skill": "Restaur.3",
+        "objective": "connect two adjectives",
+        "cefr": "A1",
+        "words": [
+          "日本料理",
+          "人気",
+          "ブラジル料理",
+          "しらべます",
+          "サイト",
+          "おしゃれで",
+          "すてきで",
+          "おくじょう",
+          "マンション",
+          "にあります"
+        ]
+      },
+      {
+        "unit": 76,
+        "skill": "Univ.2",
+        "objective": "talk about classes at university",
+        "cefr": "A1",
+        "words": [
+          "は",
+          "おわります",
+          "何人",
+          "十一人",
+          "こんがっき",
+          "うけます",
+          "けいざいがく",
+          "けど",
+          "せいぶつがく",
+          "週に"
+        ]
+      },
+      {
+        "unit": 77,
+        "skill": "Good Date",
+        "objective": "describe a recent date",
+        "cefr": "A1",
+        "words": [
+          "楽しい",
+          "スペイン",
+          "名前",
+          "しあわせ",
+          "メールします",
+          "持っています",
+          "うんてんができます",
+          "めんきょ",
+          "つり",
+          "しゅみ"
+        ]
+      },
+      {
+        "unit": 78,
+        "skill": "Stationery",
+        "objective": "buy stationery",
+        "cefr": "A1",
+        "words": [
+          "何日",
+          "店",
+          "ところで",
+          "ぶんぼうぐ",
+          "じゅんびをします",
+          "色えんぴつ",
+          "シャーペン",
+          "小さくて",
+          "かわいくて",
+          "けしゴム"
+        ]
+      },
+      {
+        "unit": 79,
+        "skill": "Conbini",
+        "objective": "communicate at a store",
+        "cefr": "A1",
+        "words": [
+          "いくつか",
+          "コピーします",
+          "の前の",
+          "できます",
+          "開いています",
+          "スキャンもできますか",
+          "しょうしょうおまちください",
+          "コピーき",
+          "こちら",
+          "わかりました"
+        ]
+      },
+      {
+        "unit": 80,
+        "skill": "In Town",
+        "objective": "discuss a meal",
+        "cefr": "",
+        "words": [
+          "ありがとう",
+          "りんご",
+          "じゃあ",
+          "英語",
+          "僕",
+          "お",
+          "お茶",
+          "名前",
+          "食べ",
+          "飲み"
+        ]
+      },
+      {
+        "unit": 81,
+        "skill": "Routines 2",
+        "objective": "talk about your day",
+        "cefr": "",
+        "words": [
+          "へ",
+          "行き",
+          "寝",
+          "行",
+          "会社",
+          "零",
+          "起き",
+          "午前",
+          "起",
+          "零時"
+        ]
+      },
+      {
+        "unit": 82,
+        "skill": "Home 1",
+        "objective": "describe your home",
+        "cefr": "",
+        "words": [
+          "い",
+          "庭",
+          "窓",
+          "犬",
+          "猫",
+          "鳥",
+          "羽",
+          "子",
+          "机",
+          "椅子"
+        ]
+      },
+      {
+        "unit": 83,
+        "skill": "Introduction 3",
+        "objective": "talk about yourself",
+        "cefr": "",
+        "words": [
+          "住んで",
+          "いません",
+          "住",
+          "申し",
+          "大阪",
+          "歳",
+          "申",
+          "よ",
+          "そう",
+          "外国人"
+        ]
+      },
+      {
+        "unit": 84,
+        "skill": "Family 3",
+        "objective": "talk about your family",
+        "cefr": "",
+        "words": [
+          "彼",
+          "彼女",
+          "姉",
+          "彼ら",
+          "誰",
+          "女",
+          "子供",
+          "供",
+          "兄",
+          "弟"
+        ]
+      },
+      {
+        "unit": 85,
+        "skill": "Restaurant 1",
+        "objective": "ask about food",
+        "cefr": "",
+        "words": [
+          "からい",
+          "メニュー",
+          "円",
+          "百",
+          "万",
+          "千",
+          "朝ご飯",
+          "昼ご飯",
+          "晩ご飯",
+          "昼"
+        ]
+      },
+      {
+        "unit": 86,
+        "skill": "Activity 1",
+        "objective": "talk about your schedule",
+        "cefr": "",
+        "words": [
+          "来",
+          "働き",
+          "働",
+          "し",
+          "買い",
+          "今日",
+          "仕事",
+          "パーティー",
+          "仕",
+          "買"
+        ]
+      },
+      {
+        "unit": 87,
+        "skill": "Position",
+        "objective": "say where things are",
+        "cefr": "",
+        "words": [
+          "上",
+          "下",
+          "左",
+          "外",
+          "右",
+          "間",
+          "中",
+          "横",
+          "隣",
+          "前"
+        ]
+      },
+      {
+        "unit": 88,
+        "skill": "Activity 2",
+        "objective": "make requests",
+        "cefr": "",
+        "words": [
+          "平日",
+          "週末",
+          "一昨日",
+          "平",
+          "して",
+          "掃除",
+          "洗濯",
+          "それから",
+          "濯",
+          "読んで"
+        ]
+      },
+      {
+        "unit": 89,
+        "skill": "Hobby 1",
+        "objective": "talk about hobbies",
+        "cefr": "",
+        "words": [
+          "見",
+          "書き",
+          "映画",
+          "書",
+          "歌",
+          "歌い",
+          "読み",
+          "習い",
+          "手紙",
+          "習"
+        ]
+      },
+      {
+        "unit": 90,
+        "skill": "Family 4",
+        "objective": "describe extended family",
+        "cefr": "",
+        "words": [
+          "娘",
+          "息子",
+          "親戚",
+          "息",
+          "二人",
+          "おじ",
+          "戚",
+          "おば",
+          "いとこ",
+          "夫"
+        ]
+      },
+      {
+        "unit": 91,
+        "skill": "Transportation 1",
+        "objective": "take public transit",
+        "cefr": "",
+        "words": [
+          "車",
+          "乗り",
+          "使い",
+          "電車",
+          "乗",
+          "電",
+          "自転車",
+          "空港",
+          "地下鉄",
+          "飛行機"
+        ]
+      },
+      {
+        "unit": 92,
+        "skill": "Clothes 1",
+        "objective": "talk about clothes",
+        "cefr": "",
+        "words": [
+          "シャツ",
+          "セーター",
+          "白い",
+          "赤い",
+          "赤",
+          "着",
+          "パンツ",
+          "白",
+          "靴",
+          "青い"
+        ]
+      },
+      {
+        "unit": 93,
+        "skill": "Hobby 2",
+        "objective": "describe your hobbies",
+        "cefr": "",
+        "words": [
+          "今週",
+          "公園",
+          "ませんか",
+          "ましょう",
+          "一緒",
+          "緒",
+          "また",
+          "会い",
+          "来週",
+          "ましょうか"
+        ]
+      },
+      {
+        "unit": 94,
+        "skill": "Weather 1",
+        "objective": "discuss weather",
+        "cefr": "",
+        "words": [
+          "よく",
+          "晴れ",
+          "天気",
+          "悪い",
+          "天",
+          "晴",
+          "悪",
+          "空",
+          "降り",
+          "曇り"
+        ]
+      },
+      {
+        "unit": 95,
+        "skill": "Food 2",
+        "objective": "talk about food and drink",
+        "cefr": "",
+        "words": [
+          "全然",
+          "夕飯",
+          "おいしく",
+          "果物",
+          "お弁当",
+          "いかが",
+          "弁当",
+          "砂糖",
+          "ミント",
+          "醤油"
+        ]
+      },
+      {
+        "unit": 96,
+        "skill": "Direction 2",
+        "objective": "get directions",
+        "cefr": "",
+        "words": [
+          "出口",
+          "建物",
+          "どちら",
+          "入り口",
+          "どうやって",
+          "入",
+          "口",
+          "建",
+          "銀行",
+          "病院"
+        ]
+      },
+      {
+        "unit": 97,
+        "skill": "Food 3",
+        "objective": "discuss food you like",
+        "cefr": "",
+        "words": [
+          "すき",
+          "お腹",
+          "コップ",
+          "皿",
+          "箸",
+          "腹",
+          "ボウル",
+          "ナイフ",
+          "フォーク",
+          "スプーン"
+        ]
+      },
+      {
+        "unit": 98,
+        "skill": "Dates",
+        "objective": "express days and times",
+        "cefr": "",
+        "words": [
+          "二日",
+          "三日",
+          "四日",
+          "五日",
+          "月",
+          "一日",
+          "曜日",
+          "日",
+          "年",
+          "六日"
+        ]
+      },
+      {
+        "unit": 99,
+        "skill": "Shopping 1",
+        "objective": "shop for common items",
+        "cefr": "",
+        "words": [
+          "花",
+          "時計",
+          "お金",
+          "鞄",
+          "計",
+          "荷物",
+          "財布",
+          "腕時計",
+          "荷",
+          "腕"
+        ]
+      },
+      {
+        "unit": 100,
+        "skill": "People 2",
+        "objective": "discuss relationships",
+        "cefr": "",
+        "words": [
+          "女",
+          "人",
+          "方",
+          "立派",
+          "どなた",
+          "少し",
+          "男の人",
+          "女の人",
+          "皆",
+          "男"
+        ]
+      },
+      {
+        "unit": 101,
+        "skill": "Weather 2",
+        "objective": "talk about weather",
+        "cefr": "",
+        "words": [
+          "夜",
+          "今夜",
+          "寒い",
+          "暖かい",
+          "寒",
+          "暖",
+          "暑い",
+          "傘",
+          "差し",
+          "差"
+        ]
+      },
+      {
+        "unit": 102,
+        "skill": "Clothes 4",
+        "objective": "discuss belongings",
+        "cefr": "",
+        "words": [
+          "春",
+          "紫色",
+          "きつい",
+          "紫",
+          "緑色",
+          "夏",
+          "緑",
+          "靴下",
+          "ゆるい",
+          "足"
+        ]
+      },
+      {
+        "unit": 103,
+        "skill": "Nature 1",
+        "objective": "describe nature",
+        "cefr": "",
+        "words": [
+          "木",
+          "登り",
+          "咲き",
+          "川",
+          "咲",
+          "登",
+          "鳴き",
+          "鳴",
+          "海",
+          "池"
+        ]
+      },
+      {
+        "unit": 104,
+        "skill": "Classroom",
+        "objective": "talk about school",
+        "cefr": "",
+        "words": [
+          "もう",
+          "宿題",
+          "始まり",
+          "始",
+          "授業",
+          "終わり",
+          "終",
+          "教科書",
+          "易しい",
+          "こう"
+        ]
+      },
+      {
+        "unit": 105,
+        "skill": "Convenience Store",
+        "objective": "shop at a convenience store",
+        "cefr": "",
+        "words": [
+          "袋",
+          "要り",
+          "少々",
+          "お",
+          "お菓子",
+          "要",
+          "菓",
+          "唐揚げ",
+          "レジ",
+          "温める"
+        ]
+      },
+      {
+        "unit": 106,
+        "skill": "Classroom 2",
+        "objective": "talk about class",
+        "cefr": "",
+        "words": [
+          "と",
+          "言い",
+          "知り",
+          "言って",
+          "知って",
+          "知",
+          "教室",
+          "見せ",
+          "見せて",
+          "クラス"
+        ]
+      },
+      {
+        "unit": 107,
+        "skill": "Feelings 1",
+        "objective": "express how you feel",
+        "cefr": "",
+        "words": [
+          "から",
+          "楽しい",
+          "面白い",
+          "面白かった",
+          "楽",
+          "面",
+          "愛",
+          "怖い",
+          "疲れ",
+          "怖"
+        ]
+      },
+      {
+        "unit": 108,
+        "skill": "Direction 4",
+        "objective": "get around a building",
+        "cefr": "",
+        "words": [
+          "門",
+          "図書館",
+          "自動車",
+          "町",
+          "自",
+          "交番",
+          "開き",
+          "お手洗い",
+          "交",
+          "か"
+        ]
+      },
+      {
+        "unit": 109,
+        "skill": "Object",
+        "objective": "describe belongings",
+        "cefr": "",
+        "words": [
+          "太い",
+          "細い",
+          "厚い",
+          "薄い",
+          "太",
+          "薄",
+          "厚",
+          "細",
+          "ボタン",
+          "押し"
+        ]
+      },
+      {
+        "unit": 110,
+        "skill": "Shopping 2",
+        "objective": "shop for groceries",
+        "cefr": "",
+        "words": [
+          "売り",
+          "バター",
+          "グラム",
+          "ハンカチ",
+          "売",
+          "より",
+          "ほう",
+          "一番",
+          "ダイヤモンド",
+          "キロ"
+        ]
+      },
+      {
+        "unit": 111,
+        "skill": "Clothes 3",
+        "objective": "describe clothes",
+        "cefr": "",
+        "words": [
+          "制服",
+          "短い",
+          "締め",
+          "締",
+          "制",
+          "短",
+          "革",
+          "半袖",
+          "ベルト",
+          "長袖"
+        ]
+      },
+      {
+        "unit": 112,
+        "skill": "Hobby 3",
+        "objective": "discuss interests",
+        "cefr": "",
+        "words": [
+          "番号",
+          "する",
+          "大丈夫",
+          "字",
+          "泳ぐ",
+          "読む",
+          "下手",
+          "上手",
+          "野球",
+          "球"
+        ]
+      },
+      {
+        "unit": 113,
+        "skill": "Classroom 3",
+        "objective": "talk about class",
+        "cefr": "",
+        "words": [
+          "ノート",
+          "見ないで",
+          "しないで",
+          "取らないで",
+          "行かないで",
+          "取る",
+          "取",
+          "なん",
+          "作文",
+          "書く"
+        ]
+      },
+      {
+        "unit": 114,
+        "skill": "Health 1",
+        "objective": "discuss health",
+        "cefr": "",
+        "words": [
+          "足",
+          "頭",
+          "風邪",
+          "痛い",
+          "邪",
+          "痛",
+          "体",
+          "背",
+          "薬",
+          "医者"
+        ]
+      },
+      {
+        "unit": 115,
+        "skill": "Vacation",
+        "objective": "talk about travel",
+        "cefr": "",
+        "words": [
+          "見た",
+          "行った",
+          "事",
+          "国",
+          "外国",
+          "が",
+          "たい",
+          "たく",
+          "旅館",
+          "つもり"
+        ]
+      },
+      {
+        "unit": 116,
+        "skill": "Memories 1",
+        "objective": "use the past tense",
+        "cefr": "",
+        "words": [
+          "た",
+          "ん",
+          "した",
+          "あった",
+          "だった",
+          "すぎ",
+          "ので",
+          "なった",
+          "ない",
+          "いた"
+        ]
+      },
+      {
+        "unit": 117,
+        "skill": "Post Office",
+        "objective": "talk about mail",
+        "cefr": "",
+        "words": [
+          "切手",
+          "郵便局",
+          "貼り",
+          "貼",
+          "が",
+          "送り",
+          "葉書",
+          "郵便",
+          "かかる",
+          "送"
+        ]
+      },
+      {
+        "unit": 118,
+        "skill": "Games",
+        "objective": "talk about games",
+        "cefr": "",
+        "words": [
+          "伝説",
+          "オタク",
+          "ゼルダ",
+          "ボス",
+          "初心者",
+          "倒す",
+          "倒",
+          "勝つ",
+          "レベル",
+          "試合"
+        ]
+      },
+      {
+        "unit": 119,
+        "skill": "The City",
+        "objective": "describe a city",
+        "cefr": "",
+        "words": [
+          "原宿",
+          "渋谷",
+          "メイド",
+          "秋葉原",
+          "原",
+          "池袋",
+          "新宿",
+          "交差点",
+          "コスプレ",
+          "乗る"
+        ]
+      },
+      {
+        "unit": 120,
+        "skill": "Olympic Games",
+        "objective": "talk about sports",
+        "cefr": "",
+        "words": [
+          "選手",
+          "水泳",
+          "陸上",
+          "体操",
+          "オリンピック",
+          "陸",
+          "操",
+          "会場",
+          "種目",
+          "柔道"
+        ]
+      },
+      {
+        "unit": 121,
+        "skill": "Ability 1",
+        "objective": "say what you can do",
+        "cefr": "",
+        "words": [
+          "音",
+          "行ける",
+          "見える",
+          "会える",
+          "買える",
+          "動ける",
+          "聞こえる",
+          "カード",
+          "使える",
+          "飲める"
+        ]
+      },
+      {
+        "unit": 122,
+        "skill": "Favors",
+        "objective": "ask for and offer help",
+        "cefr": "",
+        "words": [
+          "君",
+          "ため",
+          "プレゼント",
+          "あげ",
+          "珍しい",
+          "珍",
+          "くれて",
+          "やる",
+          "くれ",
+          "探す"
+        ]
+      },
+      {
+        "unit": 123,
+        "skill": "Money 1",
+        "objective": "talk about money",
+        "cefr": "",
+        "words": [
+          "口座",
+          "開く",
+          "預金",
+          "暗証",
+          "閉じる",
+          "引き出す",
+          "証",
+          "用紙",
+          "残高",
+          "ローマ字"
+        ]
+      },
+      {
+        "unit": 124,
+        "skill": "Nature 2",
+        "objective": "describe the outdoors",
+        "cefr": "",
+        "words": [
+          "星",
+          "太陽",
+          "月",
+          "空気",
+          "光り",
+          "光",
+          "陽",
+          "湖",
+          "浜辺",
+          "葉"
+        ]
+      },
+      {
+        "unit": 125,
+        "skill": "Ability 2",
+        "objective": "express what you can do",
+        "cefr": "",
+        "words": [
+          "道具",
+          "小説",
+          "やすい",
+          "にくい",
+          "具",
+          "のに",
+          "十分",
+          "両方",
+          "ぴかぴか",
+          "こういう"
+        ]
+      },
+      {
+        "unit": 126,
+        "skill": "Restaurant 2",
+        "objective": "talk about restaurant food",
+        "cefr": "",
+        "words": [
+          "和食",
+          "苦い",
+          "注文",
+          "和",
+          "苦",
+          "注",
+          "味",
+          "汁",
+          "味噌",
+          "濃い"
+        ]
+      },
+      {
+        "unit": 127,
+        "skill": "Nature 3",
+        "objective": "discuss nature",
+        "cefr": "",
+        "words": [
+          "人間",
+          "生物",
+          "植物",
+          "生き",
+          "植え",
+          "地球",
+          "植",
+          "自然",
+          "環境",
+          "汚染"
+        ]
+      },
+      {
+        "unit": 128,
+        "skill": "Condition",
+        "objective": "describe common objects",
+        "cefr": "",
+        "words": [
+          "形",
+          "様子",
+          "よう",
+          "ように",
+          "ような",
+          "おかしい",
+          "ほど",
+          "みたい",
+          "格好",
+          "壊れる"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 4,
+    "units": [
+      {
+        "unit": 129,
+        "skill": "Possibilities",
+        "objective": "express possibilities",
+        "cefr": "",
+        "words": [
+          "と",
+          "小浜",
+          "機会",
+          "横浜",
+          "値引き",
+          "会う",
+          "値",
+          "へえ",
+          "名古屋",
+          "だろう"
+        ]
+      },
+      {
+        "unit": 130,
+        "skill": "Cooking 1",
+        "objective": "discuss cooking",
+        "cefr": "",
+        "words": [
+          "八百屋",
+          "豆",
+          "にんじん",
+          "片づける",
+          "新鮮",
+          "じゃがいも",
+          "鮮",
+          "腐",
+          "豆腐",
+          "豆乳"
+        ]
+      },
+      {
+        "unit": 131,
+        "skill": "Science 1",
+        "objective": "talk about common items",
+        "cefr": "",
+        "words": [
+          "科学",
+          "固い",
+          "変わり",
+          "調べる",
+          "柔らかい",
+          "固",
+          "大きさ",
+          "変え",
+          "研究",
+          "比べる"
+        ]
+      },
+      {
+        "unit": 132,
+        "skill": "Resources",
+        "objective": "discuss possibilities",
+        "cefr": "",
+        "words": [
+          "土地",
+          "所有",
+          "ほとんど",
+          "資源",
+          "限",
+          "限られる",
+          "ガス",
+          "豊か",
+          "石油",
+          "天然"
+        ]
+      },
+      {
+        "unit": 133,
+        "skill": "Emergency 1",
+        "objective": "get emergency help",
+        "cefr": "",
+        "words": [
+          "事故",
+          "事件",
+          "原因",
+          "起こり",
+          "起こし",
+          "故",
+          "件",
+          "因",
+          "不明",
+          "危険"
+        ]
+      },
+      {
+        "unit": 134,
+        "skill": "Transportation 2",
+        "objective": "take public transit",
+        "cefr": "",
+        "words": [
+          "側",
+          "バイク",
+          "新幹線",
+          "売り場",
+          "できるだけ",
+          "幹",
+          "到着",
+          "終点",
+          "出発",
+          "急行"
+        ]
+      },
+      {
+        "unit": 135,
+        "skill": "Education",
+        "objective": "talk about education",
+        "cefr": "",
+        "words": [
+          "教育",
+          "生徒",
+          "始め",
+          "受け",
+          "受",
+          "徒",
+          "育",
+          "入学",
+          "校",
+          "試験"
+        ]
+      },
+      {
+        "unit": 136,
+        "skill": "Work 1",
+        "objective": "discuss work",
+        "cefr": "",
+        "words": [
+          "給料",
+          "名刺",
+          "会議",
+          "働いて",
+          "刺",
+          "議",
+          "給",
+          "上司",
+          "複雑",
+          "社長"
+        ]
+      },
+      {
+        "unit": 137,
+        "skill": "Numbers 2",
+        "objective": "use numbers",
+        "cefr": "",
+        "words": [
+          "しか",
+          "だけ",
+          "数学",
+          "パーセント",
+          "回",
+          "増す",
+          "ほんの",
+          "秒",
+          "数〜",
+          "足す"
+        ]
+      },
+      {
+        "unit": 138,
+        "skill": "Nature 4",
+        "objective": "discuss the outdoors",
+        "cefr": "",
+        "words": [
+          "枝",
+          "折り",
+          "きらきら",
+          "折",
+          "林",
+          "景",
+          "景色",
+          "田舎",
+          "揺れる",
+          "ゴミ"
+        ]
+      },
+      {
+        "unit": 139,
+        "skill": "Desires 1",
+        "objective": "suggest activities",
+        "cefr": "",
+        "words": [
+          "夢",
+          "幸せ",
+          "であれば",
+          "のに",
+          "なあ",
+          "幸",
+          "よう",
+          "目的",
+          "興味",
+          "いつか"
+        ]
+      },
+      {
+        "unit": 140,
+        "skill": "Ideas 1",
+        "objective": "express opinions",
+        "cefr": "",
+        "words": [
+          "心",
+          "通り",
+          "について",
+          "考え",
+          "意見",
+          "考",
+          "嘘",
+          "自分",
+          "人生",
+          "つき"
+        ]
+      },
+      {
+        "unit": 141,
+        "skill": "The Airport",
+        "objective": "get around an airport",
+        "cefr": "",
+        "words": [
+          "ビザ",
+          "観光",
+          "入国",
+          "切れる",
+          "搭乗券",
+          "搭",
+          "拝",
+          "シートベルト",
+          "便",
+          "搭乗"
+        ]
+      },
+      {
+        "unit": 142,
+        "skill": "Education 2",
+        "objective": "talk about school",
+        "cefr": "",
+        "words": [
+          "教師",
+          "予習",
+          "法律",
+          "ぺらぺら",
+          "師",
+          "欠席",
+          "校長",
+          "通う",
+          "背負う",
+          "リュックサック"
+        ]
+      },
+      {
+        "unit": 143,
+        "skill": "Religion 1",
+        "objective": "discuss religion",
+        "cefr": "",
+        "words": [
+          "神社",
+          "寺",
+          "信じ",
+          "祈る",
+          "神",
+          "祈",
+          "神道",
+          "宗教",
+          "仏教",
+          "信仰"
+        ]
+      },
+      {
+        "unit": 144,
+        "skill": "Ideas 2",
+        "objective": "talk about opinions",
+        "cefr": "",
+        "words": [
+          "実",
+          "反対",
+          "返事",
+          "はっきり",
+          "知らない",
+          "理由",
+          "使う",
+          "絶対",
+          "伝える",
+          "見つかる"
+        ]
+      },
+      {
+        "unit": 145,
+        "skill": "Health 2",
+        "objective": "describe health issues",
+        "cefr": "",
+        "words": [
+          "首",
+          "喉",
+          "肘",
+          "腕",
+          "肩",
+          "調子",
+          "眠る",
+          "眠",
+          "調",
+          "指"
+        ]
+      },
+      {
+        "unit": 146,
+        "skill": "Seafood",
+        "objective": "identify seafood",
+        "cefr": "",
+        "words": [
+          "切れ",
+          "握り",
+          "たこ",
+          "さけ",
+          "刺身",
+          "まぐろ",
+          "握",
+          "のり",
+          "がり",
+          "回転"
+        ]
+      },
+      {
+        "unit": 147,
+        "skill": "Society",
+        "objective": "discuss society",
+        "cefr": "",
+        "words": [
+          "天皇",
+          "象徴",
+          "国家",
+          "平和",
+          "建て",
+          "皇",
+          "世界",
+          "社会",
+          "文化",
+          "戦争"
+        ]
+      },
+      {
+        "unit": 148,
+        "skill": "Work 2",
+        "objective": "talk about your day",
+        "cefr": "",
+        "words": [
+          "裏",
+          "駐車場",
+          "エンジン",
+          "信号",
+          "曲がり",
+          "港",
+          "船",
+          "乗客",
+          "歩道",
+          "乗り物"
+        ]
+      },
+      {
+        "unit": 149,
+        "skill": "Feelings 2",
+        "objective": "express feelings",
+        "cefr": "",
+        "words": [
+          "恋",
+          "心配",
+          "不安",
+          "がっかり",
+          "眠い",
+          "寂しい",
+          "寂",
+          "冗談",
+          "笑い",
+          "精神"
+        ]
+      },
+      {
+        "unit": 150,
+        "skill": "Politics 1",
+        "objective": "discuss politics",
+        "cefr": "",
+        "words": [
+          "首相",
+          "大統領",
+          "主張",
+          "政治",
+          "政",
+          "国際",
+          "提案",
+          "議員",
+          "議会",
+          "政治家"
+        ]
+      },
+      {
+        "unit": 151,
+        "skill": "The Arts 1",
+        "objective": "talk about creative arts",
+        "cefr": "",
+        "words": [
+          "一種",
+          "舞台",
+          "絵画",
+          "作家",
+          "芸術家",
+          "女優",
+          "俳優",
+          "劇",
+          "俳",
+          "優"
+        ]
+      },
+      {
+        "unit": 152,
+        "skill": "Memories 2",
+        "objective": "use the passive form",
+        "cefr": "",
+        "words": [
+          "泥棒",
+          "しまい",
+          "読まれ",
+          "言われ",
+          "盗まれる",
+          "前回",
+          "育てる",
+          "食べられ",
+          "され",
+          "ぎりぎり"
+        ]
+      },
+      {
+        "unit": 153,
+        "skill": "Geography 1",
+        "objective": "talk about geography",
+        "cefr": "",
+        "words": [
+          "砂",
+          "横断",
+          "方向",
+          "日本海",
+          "離れる",
+          "断",
+          "噴火",
+          "列島",
+          "火山",
+          "丘"
+        ]
+      },
+      {
+        "unit": 154,
+        "skill": "Law 1",
+        "objective": "discuss the law",
+        "cefr": "",
+        "words": [
+          "刑務所",
+          "すり",
+          "盗む",
+          "逃げる",
+          "逃",
+          "刑",
+          "盗",
+          "犯人",
+          "重大",
+          "犯す"
+        ]
+      },
+      {
+        "unit": 155,
+        "skill": "Weather 3",
+        "objective": "talk about weather",
+        "cefr": "",
+        "words": [
+          "雲",
+          "季節",
+          "予報",
+          "によると",
+          "報",
+          "雷",
+          "現象",
+          "台風",
+          "稲妻",
+          "一時的"
+        ]
+      },
+      {
+        "unit": 156,
+        "skill": "Plans 1",
+        "objective": "make plans",
+        "cefr": "",
+        "words": [
+          "し",
+          "のに",
+          "今回",
+          "全員",
+          "除く",
+          "戻る",
+          "戻",
+          "正午",
+          "さっき",
+          "たいてい"
+        ]
+      },
+      {
+        "unit": 157,
+        "skill": "Cooking 3",
+        "objective": "talk about cooking",
+        "cefr": "",
+        "words": [
+          "生",
+          "流し",
+          "注ぐ",
+          "残る",
+          "天ぷら",
+          "きのこ",
+          "流",
+          "油",
+          "オーブン",
+          "焼く"
+        ]
+      },
+      {
+        "unit": 158,
+        "skill": "Conflict 1",
+        "objective": "discuss conflict",
+        "cefr": "",
+        "words": [
+          "兵士",
+          "大戦",
+          "激しい",
+          "第一次",
+          "激",
+          "敵",
+          "盾",
+          "兵",
+          "第",
+          "剣"
+        ]
+      },
+      {
+        "unit": 159,
+        "skill": "Emergency 2",
+        "objective": "talk about disasters",
+        "cefr": "",
+        "words": [
+          "津波",
+          "災害",
+          "備える",
+          "津",
+          "備",
+          "嵐",
+          "洪水",
+          "地方",
+          "被害",
+          "もたらす"
+        ]
+      },
+      {
+        "unit": 160,
+        "skill": "Law 2",
+        "objective": "discuss laws",
+        "cefr": "",
+        "words": [
+          "宣告",
+          "白状",
+          "刑",
+          "ところ",
+          "被告",
+          "告",
+          "宣",
+          "状",
+          "囚人",
+          "脱走"
+        ]
+      },
+      {
+        "unit": 161,
+        "skill": "Home 3",
+        "objective": "talk about your home",
+        "cefr": "",
+        "words": [
+          "屋根",
+          "家賃",
+          "車庫",
+          "マンション",
+          "付く",
+          "家具",
+          "根",
+          "居間",
+          "天井",
+          "じゅうたん"
+        ]
+      },
+      {
+        "unit": 162,
+        "skill": "Obligation 2",
+        "objective": "use commands",
+        "cefr": "",
+        "words": [
+          "な",
+          "ほら",
+          "確か",
+          "安全",
+          "責任",
+          "確",
+          "責",
+          "かどうか",
+          "怠る",
+          "義務"
+        ]
+      },
+      {
+        "unit": 163,
+        "skill": "Plans 2",
+        "objective": "schedule plans",
+        "cefr": "",
+        "words": [
+          "持って",
+          "連れて",
+          "き",
+          "いき",
+          "急ぎ",
+          "訪ねる",
+          "訪",
+          "念",
+          "未来",
+          "確認"
+        ]
+      },
+      {
+        "unit": 164,
+        "skill": "Honorifics 1",
+        "objective": "use polite language",
+        "cefr": "",
+        "words": [
+          "申し訳",
+          "手数",
+          "迷惑",
+          "である",
+          "ございます",
+          "おかけする",
+          "迷",
+          "よろしければ",
+          "致す",
+          "案内"
+        ]
+      },
+      {
+        "unit": 165,
+        "skill": "Work 3",
+        "objective": "talk about a work day",
+        "cefr": "",
+        "words": [
+          "失敗",
+          "連絡",
+          "職業",
+          "敗",
+          "情報",
+          "役に立ち",
+          "職",
+          "最大",
+          "自己",
+          "産業"
+        ]
+      },
+      {
+        "unit": 166,
+        "skill": "Geography 2",
+        "objective": "discuss geography",
+        "cefr": "",
+        "words": [
+          "頂上",
+          "谷",
+          "平ら",
+          "覆う",
+          "覆",
+          "頂",
+          "塔",
+          "国境",
+          "越える",
+          "接する"
+        ]
+      },
+      {
+        "unit": 167,
+        "skill": "Money 2",
+        "objective": "talk about money",
+        "cefr": "",
+        "words": [
+          "約",
+          "大金",
+          "市場",
+          "株式",
+          "投資",
+          "もうける",
+          "株",
+          "唯一",
+          "億",
+          "利子"
+        ]
+      },
+      {
+        "unit": 168,
+        "skill": "Politics 2",
+        "objective": "discuss politics",
+        "cefr": "",
+        "words": [
+          "法案",
+          "可決",
+          "国会",
+          "役所",
+          "政党",
+          "役",
+          "次々",
+          "大臣",
+          "指名",
+          "市長"
+        ]
+      },
+      {
+        "unit": 169,
+        "skill": "Health 3",
+        "objective": "describe health issues",
+        "cefr": "",
+        "words": [
+          "咳",
+          "患者",
+          "効く",
+          "頭痛",
+          "効",
+          "睡眠",
+          "患",
+          "傷",
+          "痛む",
+          "体温"
+        ]
+      },
+      {
+        "unit": 170,
+        "skill": "Hotel 3",
+        "objective": "check in to a hotel",
+        "cefr": "",
+        "words": [
+          "宿",
+          "温泉",
+          "チェックイン",
+          "名",
+          "泊まる",
+          "泊",
+          "泉",
+          "和室",
+          "休暇",
+          "号"
+        ]
+      },
+      {
+        "unit": 171,
+        "skill": "News 1",
+        "objective": "talk about the news",
+        "cefr": "",
+        "words": [
+          "記者",
+          "記事",
+          "報道",
+          "発表",
+          "結果",
+          "詳しい",
+          "詳",
+          "放送",
+          "調査",
+          "意外"
+        ]
+      },
+      {
+        "unit": 172,
+        "skill": "Conflict 2",
+        "objective": "discuss conflict",
+        "cefr": "",
+        "words": [
+          "矢",
+          "弓",
+          "基地",
+          "銃",
+          "基",
+          "率",
+          "撃つ",
+          "競争",
+          "手段",
+          "競"
+        ]
+      },
+      {
+        "unit": 173,
+        "skill": "Transportation 4",
+        "objective": "talk about transportation",
+        "cefr": "",
+        "words": [
+          "渋滞",
+          "道路",
+          "高速",
+          "目",
+          "通じる",
+          "路",
+          "滞",
+          "白線",
+          "通過",
+          "列車"
+        ]
+      },
+      {
+        "unit": 174,
+        "skill": "The Gym",
+        "objective": "talk about exercise",
+        "cefr": "",
+        "words": [
+          "汗",
+          "かく",
+          "筋肉",
+          "鍛える",
+          "筋",
+          "鍛",
+          "ダンベル",
+          "体力",
+          "伸ばす",
+          "曲げる"
+        ]
+      },
+      {
+        "unit": 175,
+        "skill": "Fantasy 1",
+        "objective": "discuss fairy tales",
+        "cefr": "",
+        "words": [
+          "女王",
+          "王子",
+          "王女",
+          "不思議",
+          "国王",
+          "王",
+          "杖",
+          "勇気",
+          "魔女",
+          "魔法使い"
+        ]
+      },
+      {
+        "unit": 176,
+        "skill": "Tech 1",
+        "objective": "talk about technology",
+        "cefr": "",
+        "words": [
+          "電子",
+          "機械",
+          "ロボット",
+          "壊す",
+          "自動",
+          "械",
+          "電波",
+          "音量",
+          "不便",
+          "洗濯機"
+        ]
+      },
+      {
+        "unit": 177,
+        "skill": "Ideas 3",
+        "objective": "express ideas",
+        "cefr": "",
+        "words": [
+          "身",
+          "体制",
+          "主義",
+          "民主",
+          "完全",
+          "完",
+          "論文",
+          "テーマ",
+          "姿",
+          "博士"
+        ]
+      },
+      {
+        "unit": 178,
+        "skill": "Events 1",
+        "objective": "talk about celebrations",
+        "cefr": "",
+        "words": [
+          "贈り物",
+          "贈り",
+          "喜ぶ",
+          "お祝い",
+          "贈",
+          "祝",
+          "喜",
+          "式",
+          "行事",
+          "素敵"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 5,
+    "units": [
+      {
+        "unit": 179,
+        "skill": "The Clinic",
+        "objective": "describe a hospital visit",
+        "cefr": "",
+        "words": [
+          "脚",
+          "入院",
+          "体調",
+          "ふらふら",
+          "症状",
+          "診察",
+          "診",
+          "腰",
+          "細菌",
+          "症"
+        ]
+      },
+      {
+        "unit": 180,
+        "skill": "Cooking 4",
+        "objective": "discuss cooking",
+        "cefr": "",
+        "words": [
+          "保存",
+          "冷凍庫",
+          "米",
+          "スーパー",
+          "保",
+          "白米",
+          "食欲",
+          "栄養",
+          "玄米",
+          "小豆"
+        ]
+      },
+      {
+        "unit": 181,
+        "skill": "The Train",
+        "objective": "ride a train or bus",
+        "cefr": "",
+        "words": [
+          "下さい",
+          "足元",
+          "乗車",
+          "閉まる",
+          "駅前",
+          "優先",
+          "駆け込む",
+          "駆",
+          "付近",
+          "特急"
+        ]
+      },
+      {
+        "unit": 182,
+        "skill": "Money 3",
+        "objective": "discuss business",
+        "cefr": "",
+        "words": [
+          "いくつか",
+          "扱う",
+          "販売",
+          "中古",
+          "見本",
+          "扱",
+          "ただ",
+          "消費",
+          "増加",
+          "減少"
+        ]
+      },
+      {
+        "unit": 183,
+        "skill": "Work 4",
+        "objective": "describe people's jobs",
+        "cefr": "",
+        "words": [
+          "年金",
+          "という",
+          "退職",
+          "与える",
+          "従業員",
+          "与",
+          "従",
+          "会社員",
+          "公務員",
+          "方法"
+        ]
+      },
+      {
+        "unit": 184,
+        "skill": "Home 4",
+        "objective": "talk about chores",
+        "cefr": "",
+        "words": [
+          "炊飯器",
+          "切る",
+          "炊く",
+          "包丁",
+          "習慣",
+          "読書",
+          "炊",
+          "引き出し",
+          "住む",
+          "招く"
+        ]
+      },
+      {
+        "unit": 185,
+        "skill": "News 2",
+        "objective": "discuss the news",
+        "cefr": "",
+        "words": [
+          "せい",
+          "偶然",
+          "記録",
+          "発言",
+          "現実",
+          "録",
+          "偶",
+          "日記",
+          "やがて",
+          "広告"
+        ]
+      },
+      {
+        "unit": 186,
+        "skill": "Feelings 3",
+        "objective": "express your feelings",
+        "cefr": "",
+        "words": [
+          "後悔",
+          "泣く",
+          "感情",
+          "込める",
+          "大人しい",
+          "泣",
+          "悔",
+          "悩む",
+          "興奮",
+          "幸福"
+        ]
+      },
+      {
+        "unit": 187,
+        "skill": "Authority",
+        "objective": "use commands",
+        "cefr": "",
+        "words": [
+          "ただ",
+          "しろ",
+          "来い",
+          "止まれ",
+          "頑張れ",
+          "立てる",
+          "さっさ",
+          "命令",
+          "支配",
+          "援助"
+        ]
+      },
+      {
+        "unit": 188,
+        "skill": "Nature 5",
+        "objective": "describe the outdoors",
+        "cefr": "",
+        "words": [
+          "煙",
+          "煙突",
+          "影",
+          "刺す",
+          "性格",
+          "もうもう",
+          "穴",
+          "罠",
+          "掘る",
+          "森林"
+        ]
+      },
+      {
+        "unit": 189,
+        "skill": "Animals",
+        "objective": "talk about animals",
+        "cefr": "",
+        "words": [
+          "へび",
+          "かに",
+          "かめ",
+          "産む",
+          "哺乳",
+          "くじら",
+          "哺",
+          "巣",
+          "双子",
+          "網"
+        ]
+      },
+      {
+        "unit": 190,
+        "skill": "Space",
+        "objective": "discuss space",
+        "cefr": "",
+        "words": [
+          "惑星",
+          "宇宙",
+          "火星",
+          "天文学",
+          "惑",
+          "無限",
+          "宇宙飛行士",
+          "探検",
+          "太陽系",
+          "検"
+        ]
+      },
+      {
+        "unit": 191,
+        "skill": "Casual 1",
+        "objective": "use casual language",
+        "cefr": "",
+        "words": [
+          "超",
+          "俺",
+          "お前",
+          "やばい",
+          "なんか",
+          "あいつ",
+          "イケメン",
+          "やつ",
+          "めちゃ",
+          "まじで"
+        ]
+      },
+      {
+        "unit": 192,
+        "skill": "Religion 2",
+        "objective": "discuss religion",
+        "cefr": "",
+        "words": [
+          "奇跡",
+          "聖書",
+          "地獄",
+          "墓",
+          "司祭",
+          "悪魔",
+          "いつまでも",
+          "使命",
+          "果たす",
+          "墓地"
+        ]
+      },
+      {
+        "unit": 193,
+        "skill": "Desires 2",
+        "objective": "express desires",
+        "cefr": "",
+        "words": [
+          "望む",
+          "満足",
+          "こぼれ",
+          "気に入る",
+          "うらやましい",
+          "満",
+          "地位",
+          "重要",
+          "価値",
+          "権力"
+        ]
+      },
+      {
+        "unit": 194,
+        "skill": "Hair Salon",
+        "objective": "talk to a hair stylist",
+        "cefr": "",
+        "words": [
+          "カット",
+          "髪の毛",
+          "美容院",
+          "床屋",
+          "はさみ",
+          "毛",
+          "辺り",
+          "黒髪",
+          "前髪",
+          "センチ"
+        ]
+      },
+      {
+        "unit": 195,
+        "skill": "The Dentist",
+        "objective": "talk to a dentist",
+        "cefr": "",
+        "words": [
+          "虫歯",
+          "歯痛",
+          "乳歯",
+          "抜く",
+          "抜ける",
+          "ずきずき",
+          "頬",
+          "歯石",
+          "歯茎",
+          "腫れる"
+        ]
+      },
+      {
+        "unit": 196,
+        "skill": "Tech 2",
+        "objective": "describe home appliances",
+        "cefr": "",
+        "words": [
+          "電源",
+          "掃除機",
+          "繋ぐ",
+          "繋がる",
+          "差し込む",
+          "繋",
+          "つい",
+          "リモコン",
+          "ネットワーク",
+          "ダウンロード"
+        ]
+      },
+      {
+        "unit": 197,
+        "skill": "Cooking 5",
+        "objective": "follow a cooking recipe",
+        "cefr": "",
+        "words": [
+          "チーズ",
+          "フライパン",
+          "蒸気",
+          "ごま",
+          "熱する",
+          "溶かす",
+          "溶",
+          "容器",
+          "缶",
+          "かぼちゃ"
+        ]
+      },
+      {
+        "unit": 198,
+        "skill": "Work 5",
+        "objective": "talk about work",
+        "cefr": "",
+        "words": [
+          "雇う",
+          "条件",
+          "報告",
+          "最低",
+          "満たす",
+          "雇",
+          "条",
+          "職場",
+          "首",
+          "選択"
+        ]
+      },
+      {
+        "unit": 199,
+        "skill": "People 3",
+        "objective": "discuss relationships",
+        "cefr": "",
+        "words": [
+          "仲",
+          "恋人",
+          "婚約",
+          "親しい",
+          "付き合う",
+          "喧嘩",
+          "しょっちゅう",
+          "仲間",
+          "夫婦",
+          "婦"
+        ]
+      },
+      {
+        "unit": 200,
+        "skill": "Education 3",
+        "objective": "talk about school",
+        "cefr": "",
+        "words": [
+          "課題",
+          "児童",
+          "要素",
+          "範囲",
+          "課",
+          "児",
+          "範",
+          "段階",
+          "公立",
+          "給食"
+        ]
+      },
+      {
+        "unit": 201,
+        "skill": "The Clinic 2",
+        "objective": "discuss medical treatment",
+        "cefr": "",
+        "words": [
+          "薬局",
+          "マスク",
+          "効果",
+          "医師",
+          "処方箋",
+          "癌",
+          "治療",
+          "伝染",
+          "皮膚",
+          "膚"
+        ]
+      },
+      {
+        "unit": 202,
+        "skill": "Science 2",
+        "objective": "talk about science",
+        "cefr": "",
+        "words": [
+          "状態",
+          "全体",
+          "物質",
+          "比較",
+          "溶ける",
+          "心理学",
+          "較",
+          "固体",
+          "気体",
+          "液体"
+        ]
+      },
+      {
+        "unit": 203,
+        "skill": "The Arts 2",
+        "objective": "discuss creative arts",
+        "cefr": "",
+        "words": [
+          "才能",
+          "書道",
+          "折り紙",
+          "生け花",
+          "抽象的",
+          "才",
+          "抽",
+          "目次",
+          "富む",
+          "創造"
+        ]
+      },
+      {
+        "unit": 204,
+        "skill": "Ideas 4",
+        "objective": "express thoughts",
+        "cefr": "",
+        "words": [
+          "誤解",
+          "ついに",
+          "謎",
+          "解く",
+          "しょうがない",
+          "誤",
+          "集中",
+          "暗記",
+          "さすが",
+          "例えば"
+        ]
+      },
+      {
+        "unit": 205,
+        "skill": "History",
+        "objective": "talk about history",
+        "cefr": "",
+        "words": [
+          "忍者",
+          "かつて",
+          "昔",
+          "再建",
+          "戦後",
+          "忍",
+          "しばしば",
+          "世紀",
+          "発明",
+          "発見"
+        ]
+      },
+      {
+        "unit": 206,
+        "skill": "Restaurant 3",
+        "objective": "discuss food and drink",
+        "cefr": "",
+        "words": [
+          "乾杯",
+          "飲み会",
+          "居酒屋",
+          "日本酒",
+          "酔っ払い",
+          "酔",
+          "居",
+          "杯",
+          "おかず",
+          "二日酔い"
+        ]
+      },
+      {
+        "unit": 207,
+        "skill": "Nature 6",
+        "objective": "talk about nature",
+        "cefr": "",
+        "words": [
+          "朝日",
+          "昇る",
+          "日没",
+          "日の出",
+          "昇",
+          "没",
+          "夕日",
+          "夕焼け",
+          "真っ赤",
+          "輝く"
+        ]
+      },
+      {
+        "unit": 208,
+        "skill": "Fantasy 2",
+        "objective": "discuss fiction",
+        "cefr": "",
+        "words": [
+          "宝",
+          "隠す",
+          "埋める",
+          "現れる",
+          "埋",
+          "隠",
+          "陰",
+          "魅力",
+          "永遠",
+          "隠れる"
+        ]
+      },
+      {
+        "unit": 209,
+        "skill": "Casual 2",
+        "objective": "use casual language",
+        "cefr": "",
+        "words": [
+          "っけ",
+          "一体",
+          "ヤンキー",
+          "あれ",
+          "でかい",
+          "サボる",
+          "かい",
+          "ママチャリ",
+          "色〜",
+          "もてる"
+        ]
+      },
+      {
+        "unit": 210,
+        "skill": "The Farm",
+        "objective": "discuss life on a farm",
+        "cefr": "",
+        "words": [
+          "作物",
+          "農家",
+          "農場",
+          "産物",
+          "小麦",
+          "農",
+          "畑",
+          "稲",
+          "種",
+          "蒔く"
+        ]
+      },
+      {
+        "unit": 211,
+        "skill": "Honorifics 3",
+        "objective": "use polite language",
+        "cefr": "",
+        "words": [
+          "氏",
+          "誠",
+          "ご覧",
+          "ご存知",
+          "覧",
+          "率直",
+          "なるべく",
+          "伺う",
+          "助言",
+          "助かる"
+        ]
+      },
+      {
+        "unit": 212,
+        "skill": "Language",
+        "objective": "talk about languages",
+        "cefr": "",
+        "words": [
+          "常",
+          "翻訳",
+          "すでに",
+          "用語",
+          "語彙",
+          "彙",
+          "翻",
+          "定義",
+          "学習",
+          "語学"
+        ]
+      },
+      {
+        "unit": 213,
+        "skill": "Feelings 4",
+        "objective": "say how you feel",
+        "cefr": "",
+        "words": [
+          "まあ",
+          "かわいそう",
+          "恐怖",
+          "信用",
+          "震える",
+          "さっぱり",
+          "落ち込む",
+          "恵む",
+          "快適",
+          "面倒"
+        ]
+      },
+      {
+        "unit": 214,
+        "skill": "Science 3",
+        "objective": "discuss science",
+        "cefr": "",
+        "words": [
+          "学者",
+          "過程",
+          "大した",
+          "限界",
+          "理科",
+          "公式",
+          "重視",
+          "図表",
+          "仕組み",
+          "透明"
+        ]
+      },
+      {
+        "unit": 215,
+        "skill": "Money 4",
+        "objective": "talk about business",
+        "cefr": "",
+        "words": [
+          "資金",
+          "企業",
+          "資本",
+          "提供",
+          "失業",
+          "事業",
+          "品",
+          "商店",
+          "商業",
+          "購入"
+        ]
+      },
+      {
+        "unit": 216,
+        "skill": "Ideas 5",
+        "objective": "share opinions",
+        "cefr": "",
+        "words": [
+          "大いに",
+          "論理",
+          "有能",
+          "注目",
+          "意図",
+          "改善",
+          "独特",
+          "結論",
+          "決心",
+          "わざと"
+        ]
+      },
+      {
+        "unit": 217,
+        "skill": "Nature 7",
+        "objective": "discuss nature",
+        "cefr": "",
+        "words": [
+          "自ら",
+          "寸前",
+          "絶滅",
+          "人類",
+          "周囲",
+          "崩壊",
+          "雑草",
+          "虹",
+          "熱帯",
+          "囲む"
+        ]
+      },
+      {
+        "unit": 218,
+        "skill": "Law 3",
+        "objective": "talk about the news",
+        "cefr": "",
+        "words": [
+          "公衆",
+          "共に",
+          "正義",
+          "道徳",
+          "だます",
+          "怪しい",
+          "現場",
+          "容疑",
+          "倫理",
+          "強盗"
+        ]
+      },
+      {
+        "unit": 219,
+        "skill": "Feelings 5",
+        "objective": "express feelings",
+        "cefr": "",
+        "words": [
+          "敬意",
+          "親友",
+          "人物",
+          "愉快",
+          "保証",
+          "意地悪",
+          "味方",
+          "友情",
+          "頑固",
+          "告白"
+        ]
+      },
+      {
+        "unit": 220,
+        "skill": "Four Seasons",
+        "objective": "talk about seasons",
+        "cefr": "",
+        "words": [
+          "四季",
+          "桜",
+          "咲く",
+          "花粉",
+          "花見",
+          "待ち遠しい",
+          "梅雨",
+          "実家",
+          "かき氷",
+          "お盆"
+        ]
+      }
+    ]
+  },
+  {
+    "section": 6,
+    "units": []
+  }
+]
