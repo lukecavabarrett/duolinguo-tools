@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from html import escape, unescape
 import json
 import os
@@ -40,6 +41,14 @@ def step(name: str) -> float:
 def done(start: float, detail: str = "") -> None:
     elapsed = time.time() - start
     print(f"done ({elapsed:.2f}s){' — ' + detail if detail else ''}")
+
+
+def fingerprint(*parts: str, length: int = 12) -> str:
+    digest = hashlib.sha256()
+    for part in parts:
+        digest.update(part.encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()[:length]
 
 
 def fail(result: subprocess.CompletedProcess[str]) -> None:
@@ -507,7 +516,7 @@ def render_html(
     course_json: str,
     vocab_json: str,
     cluster_json: str,
-    git_hash: str,
+    version_tag: str,
     pwa: bool,
     embed_vocab: bool,
 ) -> str:
@@ -533,7 +542,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     output = output.replace("COURSE_DATA_PLACEHOLDER", course_json)
     output = output.replace("VOCAB_DATA_PLACEHOLDER", vocab_json if embed_vocab else "null")
     output = output.replace("CLUSTER_DATA_PLACEHOLDER", cluster_json)
-    output = output.replace("GIT_VERSION_PLACEHOLDER", git_hash)
+    output = output.replace("GIT_VERSION_PLACEHOLDER", version_tag)
     output = output.replace("PWA_HEAD_PLACEHOLDER", pwa_head)
     output = output.replace("PWA_BOOTSTRAP_PLACEHOLDER", pwa_bootstrap)
     return output
@@ -571,8 +580,8 @@ def build_icon_svg(course: dict) -> str:
 """
 
 
-def build_service_worker(course_id: str, git_hash: str) -> str:
-    cache_name = f"flashcards-{course_id}-{git_hash}"
+def build_service_worker(course_id: str, cache_tag: str) -> str:
+    cache_name = f"flashcards-{course_id}-{cache_tag}"
     app_shell = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./vocab-data.json"]
     return f"""const CACHE_NAME = {cache_name!r};
 const APP_SHELL = {json.dumps(app_shell, ensure_ascii=False)};
@@ -740,17 +749,18 @@ def main() -> None:
     with (ROOT / "src" / "template.html").open("r", encoding="utf-8") as f:
         template = f.read()
 
-    git_hash = subprocess.run(
-        ["git", "rev-parse", "--short", "HEAD"],
-        capture_output=True,
-        text=True,
-    ).stdout.strip() or "dev"
-
     cluster_path = ROOT / course.get("clusterPath", "")
     if course.get("clusterPath") and cluster_path.exists():
         cluster_json = json.dumps(read_json(cluster_path), ensure_ascii=False, separators=(",", ":"))
     else:
         cluster_json = "{}"
+
+    version_course_json = json.dumps(
+        runtime_course(course, fetch_path="<runtime>"),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    app_version = fingerprint(course_id, app_js, vocab_json, cluster_json, version_course_json, length=7)
 
     built_paths: list[Path] = []
 
@@ -763,7 +773,7 @@ def main() -> None:
             course_json=standalone_course_json,
             vocab_json=vocab_json,
             cluster_json=cluster_json,
-            git_hash=git_hash,
+            version_tag=app_version,
             pwa=False,
             embed_vocab=True,
         )
@@ -780,6 +790,8 @@ def main() -> None:
         course_dir = site_root / "courses" / course_id
         site_course = runtime_course(course, fetch_path="./vocab-data.json")
         site_course_json = json.dumps(site_course, ensure_ascii=False, separators=(",", ":"))
+        manifest_text = build_manifest(course)
+        icon_svg = build_icon_svg(course)
         site_html = render_html(
             template,
             course=course,
@@ -787,17 +799,18 @@ def main() -> None:
             course_json=site_course_json,
             vocab_json=vocab_json,
             cluster_json=cluster_json,
-            git_hash=git_hash,
+            version_tag=app_version,
             pwa=True,
             embed_vocab=False,
         )
+        site_cache_tag = fingerprint(course_id, site_html, vocab_json, site_course_json, manifest_text, icon_svg)
 
         built_paths.append(write_text(course_dir / "index.html", site_html))
         built_paths.append(write_text(course_dir / "vocab-data.json", json.dumps(packed_vocab, ensure_ascii=False, separators=(",", ":"))))
         built_paths.append(write_json(course_dir / "course.json", site_course))
-        built_paths.append(write_text(course_dir / "manifest.webmanifest", build_manifest(course)))
-        built_paths.append(write_text(course_dir / "icon.svg", build_icon_svg(course)))
-        built_paths.append(write_text(course_dir / "service-worker.js", build_service_worker(course_id, git_hash)))
+        built_paths.append(write_text(course_dir / "manifest.webmanifest", manifest_text))
+        built_paths.append(write_text(course_dir / "icon.svg", icon_svg))
+        built_paths.append(write_text(course_dir / "service-worker.js", build_service_worker(course_id, site_cache_tag)))
 
         update_site_chooser(site_root)
         chooser_path = site_root / "index.html"
@@ -808,6 +821,7 @@ def main() -> None:
     total = time.time() - t0
     rel_paths = ", ".join(str(path.relative_to(ROOT)) for path in built_paths)
     print(f"\nBuilt {rel_paths}")
+    print(f"Version: {app_version}")
     print(f"JS: {app_kb:.1f} KB, packed vocab: {size_kb:.0f} KB, target: {args.target}")
     print(f"Words: {len(vocab['words'])}, Skills: {len(vocab['skills'])}, Course: {course_id}")
     print(f"Total: {total:.2f}s")
