@@ -73,6 +73,7 @@ export interface CourseConfig {
   targetPack: string;
   storagePrefix: string;
   fetchPath: string;
+  wordAudioMode: 'remote' | 'local' | 'embedded';
   labels: CourseLabels;
 }
 

@@ -97,6 +97,7 @@ def make_default_course_config(course_id: str, from_lang: str, to_lang: str) -> 
         "targetPack": "ja" if to_lang == "ja" else "default",
         "storagePrefix": f"flashcards:{course_id}",
         "fetchPath": str(build_root / "enriched" / "vocab_data.json"),
+        "wordAudioMode": "remote",
         "labels": {
             "from": from_lang.upper(),
             "to": to_lang.upper(),
@@ -429,6 +430,7 @@ def runtime_course(course: dict, *, fetch_path: str | None = None) -> dict:
         "targetPack": course["targetPack"],
         "storagePrefix": course["storagePrefix"],
         "fetchPath": fetch_path or course["fetchPath"],
+        "wordAudioMode": course.get("wordAudioMode", "remote"),
         "labels": course["labels"],
     }
 

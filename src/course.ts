@@ -11,6 +11,7 @@ const DEFAULT_COURSE: CourseConfig = {
   targetPack: 'ja',
   storagePrefix: 'jf',
   fetchPath: 'build/courses/en-ja/enriched/vocab_data.json',
+  wordAudioMode: 'remote',
   labels: {
     from: 'English',
     to: 'Japanese',

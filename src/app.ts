@@ -189,6 +189,24 @@ function normalizeDirection(raw: string | null): Direction {
   return 'to2from';
 }
 
+function isOffline(): boolean {
+  return typeof navigator !== 'undefined' && navigator.onLine === false;
+}
+
+function hasSpeechSynthesis(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+}
+
+function canUseWordAudio(word: Word): boolean {
+  if (!word.audio) return false;
+  if (COURSE.wordAudioMode === 'remote' && isOffline()) return false;
+  return true;
+}
+
+function canPlayAudio(word: Word): boolean {
+  return canUseWordAudio(word) || hasSpeechSynthesis();
+}
+
 // ══════════════════════════════════════════════════════
 //  EXERCISE TYPES
 // ══════════════════════════════════════════════════════
@@ -216,7 +234,7 @@ function pickExerciseType(card: Word): ExerciseType {
 
   let eligible = EXERCISE_TYPES.filter(t => t.difficulty <= maxDiff);
   if (eligible.length === 0) eligible = [EXERCISE_TYPES[0]];
-  if (!card.audio || S.noAudio) eligible = eligible.filter(t => !t.audioOnly);
+  if (!canUseWordAudio(card) || S.noAudio) eligible = eligible.filter(t => !t.audioOnly);
 
   if (S._recentTypes && S._recentTypes.length >= 2) {
     const last2 = S._recentTypes.slice(-2);
@@ -283,7 +301,7 @@ function getAudioCtx(): AudioContext {
 }
 
 function playAudio(word: Word): void {
-  if (word.audio) {
+  if (canUseWordAudio(word)) {
     const a = new Audio(word.audio);
     a.play().catch(() => fallbackTTS(TARGET_PACK.getTtsText(word)));
   } else {
@@ -822,6 +840,7 @@ function cardTop() {
   const romajiVis = S.showRomaji ? 'visible' : 'hidden';
   const hintVis = S.showRomaji ? 'gone' : '';
   const showRomajiArea = !isReverse && !isAudio && !!card.to.transliteration;
+  const speakerDisabled = !canPlayAudio(card) ? ' disabled aria-disabled="true"' : '';
 
   return `
     <div class="${cardCls}" id="flashcard">
@@ -829,7 +848,7 @@ function cardTop() {
       ${isAudio ? `
         <div style="text-align:center;padding:1rem 0">
           <div class="audio-viz" id="audio-viz">
-            <button class="btn-speaker" id="btn-speak" style="width:64px;height:64px">${speakerSvg}</button>
+            <button class="btn-speaker" id="btn-speak" style="width:64px;height:64px"${speakerDisabled}>${speakerSvg}</button>
             <div class="audio-bars">
               <span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span>
               <span style="height:90%"></span><span style="height:60%"></span><span style="height:80%"></span>
@@ -841,7 +860,7 @@ function cardTop() {
         </div>
       ` : `
         <div class="word-row">
-          ${isReverse ? '' : `<button class="btn-speaker" id="btn-speak">${speakerSvg}</button>`}
+          ${isReverse ? '' : `<button class="btn-speaker" id="btn-speak"${speakerDisabled}>${speakerSvg}</button>`}
           <div class="word-main${isReverse ? ' word-en' : ''}" id="word-tap">${mainWordHtml}</div>
         </div>
         ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.to.transliteration)}</div>
@@ -859,8 +878,8 @@ function wordInfoBanner(card: Word, exerciseType: ExerciseType, correct = false)
   return `<div class="word-info-banner${correct ? ' wib-correct' : ''}">
     ${showJp ? `<div class="wib-row">
       <span class="wib-jp">${targetHtml}</span>
-      <button class="wib-play" id="btn-wib-play">${speakerSvg}</button>
-    </div>` : `<div class="wib-row"><button class="wib-play" id="btn-wib-play">${speakerSvg}</button></div>`}
+      <button class="wib-play" id="btn-wib-play"${!canPlayAudio(card) ? ' disabled aria-disabled="true"' : ''}>${speakerSvg}</button>
+    </div>` : `<div class="wib-row"><button class="wib-play" id="btn-wib-play"${!canPlayAudio(card) ? ' disabled aria-disabled="true"' : ''}>${speakerSvg}</button></div>`}
     ${card.to.transliteration ? `<div class="wib-romaji">${esc(card.to.transliteration)}</div>` : ''}
     <div class="wib-en">${esc(allSourceAnswers(card).join(', '))}</div>
   </div>`;
