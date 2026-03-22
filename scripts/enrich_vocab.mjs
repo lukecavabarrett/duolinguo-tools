@@ -1,5 +1,5 @@
 // Enrich scraped vocab data with kana readings.
-// Called by build.py: reads data/scraped/vocab_data.json → writes data/enriched/vocab_data.json
+// Called by build.py: reads input vocab JSON → writes enriched vocab JSON
 //
 // Strategy — best of both worlds, no regressions:
 // 1. Words already in kana: use jp directly (preserves katakana)
@@ -13,12 +13,15 @@ import { toHiragana, isKana } from 'wanakana';
 import KuroshiroModule from 'kuroshiro';
 import KuromojiAnalyzer from 'kuroshiro-analyzer-kuromoji';
 const Kuroshiro = KuroshiroModule.default || KuroshiroModule;
-import { readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const data = JSON.parse(readFileSync(join(root, 'data/scraped/vocab_data.json'), 'utf8'));
+const args = process.argv.slice(2);
+const inputPath = args[0] ? join(root, args[0]) : join(root, 'data/scraped/vocab_data.json');
+const outputPath = args[1] ? join(root, args[1]) : join(root, 'data/enriched/vocab_data.json');
+const data = JSON.parse(readFileSync(inputPath, 'utf8'));
 
 function normalizeRomaji(s) {
   let r = s;
@@ -105,7 +108,8 @@ for (const word of data.words) {
   }
 }
 
-writeFileSync(join(root, 'data/enriched/vocab_data.json'), JSON.stringify(data, null, 1), 'utf8');
+mkdirSync(dirname(outputPath), { recursive: true });
+writeFileSync(outputPath, JSON.stringify(data, null, 1), 'utf8');
 const parts = [`${data.words.length} words`, `${fromJp} kana-passthrough`, `${fromWanakana} wanakana`, `${fromKuroshiro} kuroshiro`];
 if (disagreements.length) parts.push(`${disagreements.length} disagreements`);
 console.log(`  Enriched ${parts.join(', ')}.`);

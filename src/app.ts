@@ -36,7 +36,7 @@ function parseVocabData(parsed: any): VocabData {
     } catch(e) {}
   }
   // Fallback: try fetching enriched data (works when served, not file://)
-  fetch('data/enriched/vocab_data.json')
+  fetch('build/courses/en-ja/enriched/vocab_data.json')
     .then(r => r.json())
     .then(d => { DATA = parseVocabData(d); render(); })
     .catch(() => console.warn('No vocab data found'));

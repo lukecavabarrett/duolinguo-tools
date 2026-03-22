@@ -6,9 +6,12 @@ Requires a JWT token from your browser cookies (jwt_token on duolingo.com).
 Usage:
     python scripts/scrape_course_structure.py <jwt_token> [username]
 
-Output: data/course_structure.json
+Output: data/courses/en-ja/unused/course_structure.json
 """
-import json, sys, urllib.request
+import json
+import os
+import sys
+import urllib.request
 
 if len(sys.argv) < 3:
     print("Usage: python scripts/scrape_course_structure.py <jwt_token> <username>")
@@ -79,7 +82,8 @@ for si, sec in enumerate(sections):
         })
     result.append({"section": si, "units": section_units})
 
-out_path = "data/course_structure.json"
+out_path = os.path.join("data", "courses", "en-ja", "unused", "course_structure.json")
+os.makedirs(os.path.dirname(out_path), exist_ok=True)
 with open(out_path, "w") as f:
     json.dump(result, f, indent=2, ensure_ascii=False)
 

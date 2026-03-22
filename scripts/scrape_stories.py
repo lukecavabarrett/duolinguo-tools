@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """Scrape Duolingo stories for Japanese from duome.eu and save as JSON."""
-import json, os, re, time, urllib.request, html
+import html
+import json
+import os
+import re
+import time
+import urllib.request
+
+ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
+STORIES_DIR = os.path.join(ROOT_DIR, 'data', 'courses', 'en-ja', 'unused', 'stories')
+STORIES_INDEX_PATH = os.path.join(STORIES_DIR, 'stories_index.json')
+STORIES_DATA_PATH = os.path.join(STORIES_DIR, 'stories_data.json')
 
 def fetch(url, retries=3):
     for i in range(retries):
@@ -92,7 +102,7 @@ def parse_story(raw_html, meta):
     return story
 
 # Load index
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'scraped', 'stories_index.json')) as f:
+with open(STORIES_INDEX_PATH) as f:
     index = json.load(f)
 
 print(f'Scraping {len(index)} stories...')
@@ -108,11 +118,11 @@ for i, meta in enumerate(index):
         print(f'  FAILED')
     time.sleep(1)  # Be polite
 
-outpath = os.path.join(os.path.dirname(__file__), '..', 'data', 'scraped', 'stories_data.json')
-with open(outpath, 'w', encoding='utf-8') as f:
+os.makedirs(STORIES_DIR, exist_ok=True)
+with open(STORIES_DATA_PATH, 'w', encoding='utf-8') as f:
     json.dump(stories, f, ensure_ascii=False, indent=2)
 
-print(f'\nDone! Saved {len(stories)} stories to {outpath}')
+print(f'\nDone! Saved {len(stories)} stories to {STORIES_DATA_PATH}')
 total_lines = sum(len(s['lines']) for s in stories)
 total_challenges = sum(len(s['challenges']) for s in stories)
 print(f'Total: {total_lines} lines, {total_challenges} challenges')
