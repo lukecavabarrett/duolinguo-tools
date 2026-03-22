@@ -1,0 +1,11 @@
+{
+  "courseId": "en-ja",
+  "title": "Japanese Flash",
+  "fromLang": "en",
+  "toLang": "ja",
+  "audioPrefix": "https://d1vq87e9lcf771.cloudfront.net/",
+  "inputVocabPath": "data/scraped/vocab_data.json",
+  "enrichedVocabPath": "data/enriched/vocab_data.json",
+  "clusterPath": "data/skill_clusters.json",
+  "enrichScript": "scripts/enrich_vocab.mjs"
+}
