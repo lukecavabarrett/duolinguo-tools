@@ -29,7 +29,11 @@ LANGUAGE_FLAGS = {
     "de": "🇩🇪",
     "it": "🇮🇹",
     "ja": "🇯🇵",
+    "nl": "🇳🇱",
     "pt": "🇵🇹",
+}
+DUOME_LANGUAGE_CODES = {
+    "nl": "dn",
 }
 
 
@@ -107,6 +111,10 @@ def load_course_config(course_id: str) -> dict | None:
 
 def language_flag(lang: str) -> str:
     return LANGUAGE_FLAGS.get(lang.lower(), "")
+
+
+def duome_lang_code(lang: str) -> str:
+    return DUOME_LANGUAGE_CODES.get(lang.lower(), lang)
 
 
 def make_default_course_config(course_id: str, from_lang: str, to_lang: str) -> dict:
@@ -257,7 +265,9 @@ def apply_scrape_behavior(skills: list[str], entries: list[dict], scrape_behavio
 
 
 def fetch_duome_vocab(from_lang: str, to_lang: str, scrape_behavior: str) -> tuple[dict, dict]:
-    url = f"https://duome.eu/vocabulary/{from_lang}/{to_lang}/skills"
+    scrape_from = duome_lang_code(from_lang)
+    scrape_to = duome_lang_code(to_lang)
+    url = f"https://duome.eu/vocabulary/{scrape_from}/{scrape_to}/skills"
     html = fetch_text(url)
     skills, entries = parse_duome_vocab_entries(html)
     vocab = apply_scrape_behavior(skills, entries, scrape_behavior)
@@ -279,8 +289,10 @@ def cached_scrape_meta(course: dict) -> dict:
     path = scrape_meta_path_for(course)
     if path.exists():
         return read_json(path)
+    scrape_from = duome_lang_code(course["fromLang"])
+    scrape_to = duome_lang_code(course["toLang"])
     return {
-        "url": f"https://duome.eu/vocabulary/{course['fromLang']}/{course['toLang']}/skills",
+        "url": f"https://duome.eu/vocabulary/{scrape_from}/{scrape_to}/skills",
         "fromLabel": course["labels"]["from"],
         "toLabel": course["labels"]["to"],
         "scrapeBehavior": course.get("scrapeBehavior", DEFAULT_SCRAPE_BEHAVIOR),

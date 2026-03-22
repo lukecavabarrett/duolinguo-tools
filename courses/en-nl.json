@@ -1,0 +1,24 @@
+{
+  "courseId": "en-nl",
+  "title": "Dutch Flash",
+  "brandTitle": "Nederlands",
+  "brandSubtitle": "Duolingo Flashcards",
+  "brandIcon": "🇳🇱",
+  "fromLang": "en",
+  "toLang": "nl",
+  "targetPack": "default",
+  "storagePrefix": "flashcards:en-nl",
+  "fetchPath": "build/courses/en-nl/enriched/vocab_data.json",
+  "wordAudioMode": "remote",
+  "labels": {
+    "from": "English",
+    "to": "Dutch",
+    "fromShort": "EN",
+    "toShort": "NL"
+  },
+  "audioPrefix": "https://d1vq87e9lcf771.cloudfront.net/",
+  "inputVocabPath": "data/courses/en-nl/scraped/vocab_data.json",
+  "enrichedVocabPath": "build/courses/en-nl/enriched/vocab_data.json",
+  "scrapeBehavior": "default",
+  "packFormat": "generic"
+}
