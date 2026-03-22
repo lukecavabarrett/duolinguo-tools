@@ -2,13 +2,21 @@
 //  TYPE DEFINITIONS
 // ══════════════════════════════════════════════════════
 
+export type Direction = 'to2from' | 'from2to';
+
+export interface CardSide {
+  text: string;
+  aliases: string[];
+  reading?: string;
+  transliteration?: string;
+}
+
 export interface Word {
-  jp: string;
-  kana: string;
-  romaji: string;
-  en: string[];
-  audio: string;
+  id: string;
   skill: string;
+  from: CardSide;
+  to: CardSide;
+  audio: string;
 }
 
 export interface VocabData {
@@ -16,7 +24,25 @@ export interface VocabData {
   words: Word[];
 }
 
+export type AliasColumn = string[][] | Record<string, string[]>;
+
 export interface ParsedColumnarData {
+  columns: {
+    id?: string[];
+    fromText: string[];
+    fromAliases?: AliasColumn;
+    toText: string[];
+    toAliases?: AliasColumn;
+    toReading: string[];
+    toTransliteration: string[];
+    audio: string[];
+    skill: number[];
+  };
+  skills: string[];
+  audioPrefix: string;
+}
+
+export interface LegacyParsedColumnarData {
   columns: {
     jp: string[];
     kana: string[];
@@ -29,9 +55,30 @@ export interface ParsedColumnarData {
   audioPrefix: string;
 }
 
+export interface CourseLabels {
+  from: string;
+  to: string;
+  fromShort: string;
+  toShort: string;
+}
+
+export interface CourseConfig {
+  courseId: string;
+  title: string;
+  brandTitle: string;
+  brandSubtitle: string;
+  brandIcon: string;
+  fromLang: string;
+  toLang: string;
+  targetPack: string;
+  storagePrefix: string;
+  fetchPath: string;
+  labels: CourseLabels;
+}
+
 export interface ExerciseType {
   id: string;
-  direction: 'jp2en' | 'en2jp';
+  direction: Direction;
   mode: 'choice' | 'type';
   difficulty: number;
   audioOnly: boolean;
@@ -61,7 +108,7 @@ export interface AppState {
   screen: string;
   username: string;
   exerciseMode: string;
-  direction: string;
+  direction: Direction;
   exerciseType: ExerciseType;
   skillIdx: number;
   deck: Word[];

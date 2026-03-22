@@ -1,30 +1,132 @@
-import type { Word, VocabData, ParsedColumnarData, ExerciseType, HistoryEntry, History, Settings, AppState } from './types';
+import type {
+  AppState,
+  Direction,
+  ExerciseType,
+  LegacyParsedColumnarData,
+  ParsedColumnarData,
+  Settings,
+  VocabData,
+  Word,
+} from './types';
+import { COURSE } from './course';
+import { getTargetPack } from './packs';
+
+const TARGET_PACK = getTargetPack(COURSE.targetPack);
 
 // ══════════════════════════════════════════════════════
 //  DATA LOADING
 // ══════════════════════════════════════════════════════
 let DATA: VocabData = { skills: [], words: [] };
 
-function expandColumnar(parsed: ParsedColumnarData): VocabData {
-  const c = parsed.columns;
-  const len = c.jp.length;
-  const words = new Array(len);
+function normalizeAliases(primary: string, aliases?: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of [primary, ...(aliases || [])]) {
+    const trimmed = String(value || '').trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+function aliasColumnEntry(column: ParsedColumnarData['columns']['fromAliases'] | ParsedColumnarData['columns']['toAliases'], index: number): string[] {
+  if (!column) return [];
+  if (Array.isArray(column)) {
+    return Array.isArray(column[index]) ? column[index] : [];
+  }
+  const value = column[String(index)];
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeWord(raw: any): Word {
+  if (raw && raw.from && raw.to) {
+    const fromText = String(raw.from.text || '');
+    const toText = String(raw.to.text || '');
+    return {
+      id: String(raw.id || `${raw.skill || ''}|${toText}|${fromText}`),
+      skill: String(raw.skill || ''),
+      from: {
+        text: fromText,
+        aliases: normalizeAliases(fromText, raw.from.aliases || []),
+      },
+      to: {
+        text: toText,
+        aliases: normalizeAliases(toText, raw.to.aliases || []),
+        reading: String(raw.to.reading || ''),
+        transliteration: String(raw.to.transliteration || ''),
+      },
+      audio: String(raw.audio || ''),
+    };
+  }
+
+  const fromAliases = Array.isArray(raw?.en) ? raw.en : [];
+  const fromText = String(fromAliases[0] || '');
+  const toText = String(raw?.jp || '');
+  return {
+    id: `${toText}|${raw?.skill || ''}`,
+    skill: String(raw?.skill || ''),
+    from: {
+      text: fromText,
+      aliases: normalizeAliases(fromText, fromAliases),
+    },
+    to: {
+      text: toText,
+      aliases: [],
+      reading: String(raw?.kana || ''),
+      transliteration: String(raw?.romaji || ''),
+    },
+    audio: String(raw?.audio || ''),
+  };
+}
+
+function expandColumnar(parsed: ParsedColumnarData | LegacyParsedColumnarData): VocabData {
+  const c = parsed.columns as ParsedColumnarData['columns'] | LegacyParsedColumnarData['columns'];
+  const len = 'fromText' in c ? c.fromText.length : c.jp.length;
+  const words: Word[] = new Array(len);
   for (let i = 0; i < len; i++) {
-    words[i] = {
+    if ('fromText' in c) {
+      words[i] = normalizeWord({
+        id: Array.isArray(c.id) ? c.id[i] : undefined,
+        skill: parsed.skills[c.skill[i]],
+        from: {
+          text: c.fromText[i],
+          aliases: aliasColumnEntry(c.fromAliases, i),
+        },
+        to: {
+          text: c.toText[i],
+          aliases: aliasColumnEntry(c.toAliases, i),
+          reading: c.toReading[i],
+          transliteration: c.toTransliteration[i],
+        },
+        audio: c.audio[i] ? parsed.audioPrefix + c.audio[i] : '',
+      });
+      continue;
+    }
+
+    words[i] = normalizeWord({
+      skill: parsed.skills[c.skill[i]],
       jp: c.jp[i],
       kana: c.kana[i],
       romaji: c.romaji[i],
       en: c.en[i],
       audio: c.audio[i] ? parsed.audioPrefix + c.audio[i] : '',
-      skill: parsed.skills[c.skill[i]]
-    };
+    });
   }
   return { skills: parsed.skills, words };
 }
 
 function parseVocabData(parsed: any): VocabData {
   if (parsed && parsed.columns) return expandColumnar(parsed);
-  return parsed;
+  if (parsed && Array.isArray(parsed.words)) {
+    return {
+      skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+      words: parsed.words.map(normalizeWord),
+    };
+  }
+  return { skills: [], words: [] };
 }
 
 (function loadData() {
@@ -35,8 +137,7 @@ function parseVocabData(parsed: any): VocabData {
       if (parsed && parsed.skills) { DATA = parseVocabData(parsed); return; }
     } catch(e) {}
   }
-  // Fallback: try fetching enriched data (works when served, not file://)
-  fetch('build/courses/en-ja/enriched/vocab_data.json')
+  fetch(COURSE.fetchPath)
     .then(r => r.json())
     .then(d => { DATA = parseVocabData(d); render(); })
     .catch(() => console.warn('No vocab data found'));
@@ -45,7 +146,6 @@ function parseVocabData(parsed: any): VocabData {
 const SESSION_SIZE = 15;
 const STREAK_MILESTONE = 10;
 
-// Skill clusters loaded from embedded data (or empty if not available)
 const SKILL_CLUSTERS: Record<string, string> = {};
 (function loadClusters() {
   const el = document.getElementById('cluster-data');
@@ -62,40 +162,62 @@ function getCluster(skill: string): string {
   return SKILL_CLUSTERS[skill] || skill;
 }
 
+function primarySourceAnswer(card: Word): string {
+  return card.from.text;
+}
+
+function allSourceAnswers(card: Word): string[] {
+  return normalizeAliases(card.from.text, card.from.aliases || []);
+}
+
+function capitalizeAnswer(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+function directionLabel(direction: Direction, compact = false): string {
+  const from = compact ? COURSE.labels.fromShort : COURSE.labels.from;
+  const to = compact ? COURSE.labels.toShort : COURSE.labels.to;
+  return direction === 'to2from' ? `${to} → ${from}` : `${from} → ${to}`;
+}
+
+function storageKey(name: string): string {
+  return `${COURSE.storagePrefix}_${name}`;
+}
+
+function normalizeDirection(raw: string | null): Direction {
+  if (raw === 'from2to' || raw === 'en2jp') return 'from2to';
+  return 'to2from';
+}
+
 // ══════════════════════════════════════════════════════
 //  EXERCISE TYPES
 // ══════════════════════════════════════════════════════
 const EXERCISE_TYPES: ExerciseType[] = [
-  { id: 'jp2en_choice', direction: 'jp2en', mode: 'choice', difficulty: 1,   audioOnly: false, label: 'JP → EN choice' },
-  { id: 'audio_choice', direction: 'jp2en', mode: 'choice', difficulty: 1.5, audioOnly: true,  label: 'Listen → EN choice' },
-  { id: 'en2jp_choice', direction: 'en2jp', mode: 'choice', difficulty: 2,   audioOnly: false, label: 'EN → JP choice' },
-  { id: 'jp2en_type',   direction: 'jp2en', mode: 'type',   difficulty: 3,   audioOnly: false, label: 'JP → EN type' },
-  { id: 'en2jp_type',   direction: 'en2jp', mode: 'type',   difficulty: 4,   audioOnly: false, label: 'EN → JP type' },
+  { id: 'to2from_choice', direction: 'to2from', mode: 'choice', difficulty: 1,   audioOnly: false, label: `${directionLabel('to2from', true)} choice` },
+  { id: 'audio_choice',   direction: 'to2from', mode: 'choice', difficulty: 1.5, audioOnly: true,  label: `Listen → ${COURSE.labels.fromShort} choice` },
+  { id: 'from2to_choice', direction: 'from2to', mode: 'choice', difficulty: 2,   audioOnly: false, label: `${directionLabel('from2to', true)} choice` },
+  { id: 'to2from_type',   direction: 'to2from', mode: 'type',   difficulty: 3,   audioOnly: false, label: `${directionLabel('to2from', true)} type` },
+  { id: 'from2to_type',   direction: 'from2to', mode: 'type',   difficulty: 4,   audioOnly: false, label: `${directionLabel('from2to', true)} type` },
 ];
 
 function pickExerciseType(card: Word): ExerciseType {
-  // For non-mixed modes, return a fixed exercise type
   if (S.exerciseMode !== 'mixed') {
-    const mode = S.exerciseMode; // 'choice' or 'type'
+    const mode = S.exerciseMode;
     const dir = S.direction;
     return EXERCISE_TYPES.find(t => t.mode === mode && t.direction === dir && !t.audioOnly) || EXERCISE_TYPES[0];
   }
 
-  // Use wordStrength to determine eligible exercise types
   const str = wordStrength(card);
   let maxDiff;
-  if (str === 0) maxDiff = 1.5;       // unseen: JP→EN choice only
-  else if (str < 0.3) maxDiff = 2;    // seen: + EN→JP choice
-  else if (str < 0.5) maxDiff = 3;    // some practice: + JP→EN type
-  else maxDiff = 4;                   // moderate: all types
+  if (str === 0) maxDiff = 1.5;
+  else if (str < 0.3) maxDiff = 2;
+  else if (str < 0.5) maxDiff = 3;
+  else maxDiff = 4;
 
   let eligible = EXERCISE_TYPES.filter(t => t.difficulty <= maxDiff);
   if (eligible.length === 0) eligible = [EXERCISE_TYPES[0]];
-
-  // Audio-only type requires card.audio; also respect "can't listen now"
   if (!card.audio || S.noAudio) eligible = eligible.filter(t => !t.audioOnly);
 
-  // Avoid repeating same type 3x in a row
   if (S._recentTypes && S._recentTypes.length >= 2) {
     const last2 = S._recentTypes.slice(-2);
     if (last2[0] === last2[1]) {
@@ -104,7 +226,6 @@ function pickExerciseType(card: Word): ExerciseType {
     }
   }
 
-  // Weighted random: bias toward harder types for variety
   const weights = eligible.map(t => t.difficulty);
   const totalW = weights.reduce((a, b) => a + b, 0);
   let r = Math.random() * totalW;
@@ -114,7 +235,6 @@ function pickExerciseType(card: Word): ExerciseType {
     if (r <= 0) { pick = eligible[i]; break; }
   }
 
-  // Track recent types
   if (!S._recentTypes) S._recentTypes = [];
   S._recentTypes.push(pick.id);
   if (S._recentTypes.length > 3) S._recentTypes.shift();
@@ -131,27 +251,26 @@ const LS = {
 };
 
 function loadSaved() {
-  S.username = LS.get('jf_username') || '';
-  // Backward compat: old 'choice'/'type' values map to exerciseMode
-  const savedMode = LS.get('jf_mode') || 'mixed';
+  S.username = LS.get(storageKey('username')) || '';
+  const savedMode = LS.get(storageKey('mode')) || 'mixed';
   if (savedMode === 'mixed' || savedMode === 'choice' || savedMode === 'type') {
     S.exerciseMode = savedMode;
   } else {
     S.exerciseMode = 'mixed';
   }
-  S.direction = LS.get('jf_direction') || 'jp2en';
-  S.skillIdx = parseInt(LS.get('jf_skillIdx') || '10', 10);
-  try { S.history = JSON.parse(LS.get('jf_history') || '{}'); } catch(e) { S.history = {}; }
-  try { Object.assign(S.settings, JSON.parse(LS.get('jf_settings') || '{}')); } catch(e) {}
+  S.direction = normalizeDirection(LS.get(storageKey('direction')));
+  S.skillIdx = parseInt(LS.get(storageKey('skillIdx')) || '10', 10);
+  try { S.history = JSON.parse(LS.get(storageKey('history')) || '{}'); } catch(e) { S.history = {}; }
+  try { Object.assign(S.settings, JSON.parse(LS.get(storageKey('settings')) || '{}')); } catch(e) {}
 }
 
 function saveState() {
-  LS.set('jf_username', S.username);
-  LS.set('jf_mode', S.exerciseMode);
-  LS.set('jf_direction', S.direction);
-  LS.set('jf_skillIdx', String(S.skillIdx));
-  LS.set('jf_history', JSON.stringify(S.history));
-  LS.set('jf_settings', JSON.stringify(S.settings));
+  LS.set(storageKey('username'), S.username);
+  LS.set(storageKey('mode'), S.exerciseMode);
+  LS.set(storageKey('direction'), S.direction);
+  LS.set(storageKey('skillIdx'), String(S.skillIdx));
+  LS.set(storageKey('history'), JSON.stringify(S.history));
+  LS.set(storageKey('settings'), JSON.stringify(S.settings));
 }
 
 // ══════════════════════════════════════════════════════
@@ -166,9 +285,9 @@ function getAudioCtx(): AudioContext {
 function playAudio(word: Word): void {
   if (word.audio) {
     const a = new Audio(word.audio);
-    a.play().catch(() => fallbackTTS(word.jp));
+    a.play().catch(() => fallbackTTS(TARGET_PACK.getTtsText(word)));
   } else {
-    fallbackTTS(word.jp);
+    fallbackTTS(TARGET_PACK.getTtsText(word));
   }
 }
 
@@ -176,7 +295,8 @@ function fallbackTTS(text: string): void {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ja-JP';
+  const lang = TARGET_PACK.getTtsLang();
+  if (lang) u.lang = lang;
   u.rate = 0.85;
   speechSynthesis.speak(u);
 }
@@ -371,7 +491,7 @@ function selectCards(deck: Word[]): Word[] {
 }
 
 function cardId(card: Word): string {
-  return card.jp + '|' + card.skill;
+  return card.id;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -382,22 +502,21 @@ function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
-function buildChoices(correct: Word, deck: Word[], direction: string): string[] {
+function buildChoices(correct: Word, deck: Word[], direction: Direction): string[] {
   const cid = cardId(correct);
-  const getAnswer = direction === 'jp2en' ? (c: Word) => c.en[0] : (c: Word) => c.jp;
+  const getAnswer = direction === 'to2from'
+    ? (c: Word) => primarySourceAnswer(c)
+    : (c: Word) => c.to.text;
   const correctAnswer = getAnswer(correct);
 
-  // Build a set of all meanings that would be "correct" to avoid ambiguous distractors
-  let correctSet;
-  if (direction === 'jp2en') {
-    // All English meanings of the correct word (lowercased for comparison)
-    correctSet = new Set(correct.en.map(e => e.toLowerCase()));
+  let correctSet: Set<string>;
+  if (direction === 'to2from') {
+    correctSet = new Set(allSourceAnswers(correct).map(answer => answer.toLowerCase()));
   } else {
-    correctSet = new Set([correct.jp.toLowerCase()]);
-    if (correct.kana) correctSet.add(correct.kana.toLowerCase());
+    correctSet = new Set([correct.to.text.toLowerCase()]);
+    if (correct.to.reading) correctSet.add(correct.to.reading.toLowerCase());
   }
 
-  // Rank distractors by (cluster distance, skill index distance, random)
   const others = deck.filter(c => cardId(c) !== cid);
   const correctCluster = getCluster(correct.skill);
   const correctSkillIdx = DATA.skills.indexOf(correct.skill);
@@ -418,10 +537,9 @@ function buildChoices(correct: Word, deck: Word[], direction: string): string[] 
     if (distractors.length >= 3) break;
     const ans = getAnswer(c);
     const ansLower = ans.toLowerCase();
-    // Skip if this answer overlaps with any of the correct card's meanings
     if (seen.has(ansLower)) continue;
     if (correctSet.has(ansLower)) continue;
-    if (direction === 'jp2en' && c.en.some(e => correctSet.has(e.toLowerCase()))) continue;
+    if (direction === 'to2from' && allSourceAnswers(c).some(answer => correctSet.has(answer.toLowerCase()))) continue;
     distractors.push(ans);
     seen.add(ansLower);
   }
@@ -436,7 +554,7 @@ const S: AppState = {
   screen: 'profile',
   username: '',
   exerciseMode: 'mixed',
-  direction: 'jp2en',
+  direction: 'to2from',
   exerciseType: EXERCISE_TYPES[0],
   skillIdx: 10,
   deck: [],
@@ -541,9 +659,9 @@ function tplProfile() {
   return `<div class="screen anim">
     <button class="btn-gear" id="btn-settings"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="var(--dim)" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.04.31-.06.63-.06.94 0 .31.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></button>
     <div class="logo-wrap">
-      <div class="logo-icon">🇯🇵</div>
-      <div class="logo-title">日本語</div>
-      <div class="logo-sub">Duolingo Flashcards</div>
+      <div class="logo-icon">${esc(COURSE.brandIcon)}</div>
+      <div class="logo-title">${esc(COURSE.brandTitle)}</div>
+      <div class="logo-sub">${esc(COURSE.brandSubtitle)}</div>
     </div>
 
     <div class="field">
@@ -567,8 +685,8 @@ function tplProfile() {
     <div class="field" id="dir-field" style="${S.exerciseMode === 'mixed' ? 'display:none' : ''}">
       <div class="label">Direction</div>
       <div class="dir-toggle">
-        <button class="dir-btn${S.direction === 'jp2en' ? ' active' : ''}" data-dir="jp2en">JP → EN</button>
-        <button class="dir-btn${S.direction === 'en2jp' ? ' active' : ''}" data-dir="en2jp">EN → JP</button>
+        <button class="dir-btn${S.direction === 'to2from' ? ' active' : ''}" data-dir="to2from">${esc(directionLabel('to2from', true))}</button>
+        <button class="dir-btn${S.direction === 'from2to' ? ' active' : ''}" data-dir="from2to">${esc(directionLabel('from2to', true))}</button>
       </div>
     </div>
 
@@ -610,6 +728,7 @@ function importSkillOpts(): string {
 
 function tplSettings() {
   const st = S.settings;
+  const showJapaneseLeniency = COURSE.targetPack === 'ja';
   const wordCount = DATA.words ? DATA.words.length : '?';
   const skillCount = DATA.skills ? DATA.skills.length : '?';
   let lsBytes = 0;
@@ -627,23 +746,23 @@ function tplSettings() {
     <div class="field">
       <div class="label">Typing leniency</div>
       <div class="toggle-row">
+        <div><div class="toggle-label">Ignore hyphens & spaces</div><div class="toggle-sub">e.g. "ice cream" matches "icecream"</div></div>
+        ${tog('ignoreHyphens', st.ignoreHyphens)}
+      </div>
+      ${showJapaneseLeniency ? `<div class="toggle-row">
         <div><div class="toggle-label">Macron vowels</div><div class="toggle-sub">ō → ou, ā → aa, ī → ii, ū → uu, ē → ee</div></div>
         ${tog('macronVowels', st.macronVowels)}
       </div>
       <div class="toggle-row">
-        <div><div class="toggle-label">Ignore hyphens & spaces</div><div class="toggle-sub">e.g. "ice cream" matches "icecream"</div></div>
-        ${tog('ignoreHyphens', st.ignoreHyphens)}
-      </div>
-      <div class="toggle-row">
         <div><div class="toggle-label">Romanization variants</div><div class="toggle-sub">shi ↔ si, chi ↔ ti, tsu ↔ tu, fu ↔ hu, oo ↔ ou</div></div>
         ${tog('romajiVariants', st.romajiVariants)}
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="field">
       <div class="label">Display</div>
       <div class="toggle-row">
-        <div><div class="toggle-label">Show romaji by default</div><div class="toggle-sub">${st.showRomaji ? 'Visible on every card' : 'Tap the word to reveal'}</div></div>
+        <div><div class="toggle-label">${esc(TARGET_PACK.showTransliterationLabel)}</div><div class="toggle-sub">${st.showRomaji ? 'Visible on every card' : 'Tap the word to reveal'}</div></div>
         ${tog('showRomaji', st.showRomaji)}
       </div>
       <div class="toggle-row">
@@ -680,57 +799,12 @@ function tplSettings() {
   </div>`;
 }
 
-// ── Study ──
-function hasKanji(s: string): boolean {
-  return /[\u4e00-\u9fff]/.test(s);
-}
-
-function rubyWord(jp: string, kana: string): string {
-  if (!hasKanji(jp) || !kana || kana === jp) return esc(jp);
-
-  // Split jp into alternating kanji / non-kanji segments
-  const segments = jp.match(/[\u4e00-\u9fff\u3005]+|[^\u4e00-\u9fff\u3005]+/g);
-  if (!segments || segments.length === 1) {
-    return `<ruby>${esc(jp)}<rp>(</rp><rt>${esc(kana)}</rt><rp>)</rp></ruby>`;
-  }
-
-  // Use non-kanji segments as anchors to split the kana reading.
-  // e.g. 新しい → [新, しい] + あたらしい → 新(あたら) + しい
-  // e.g. お母さん → [お, 母, さん] + おかあさん → お + 母(かあ) + さん
-  let remaining = kana;
-  let html = '';
-  for (const seg of segments) {
-    if (!hasKanji(seg)) {
-      // Non-kanji anchor: everything before it in remaining is the preceding kanji's reading
-      const idx = remaining.indexOf(seg);
-      if (idx === -1) {
-        return `<ruby>${esc(jp)}<rp>(</rp><rt>${esc(kana)}</rt><rp>)</rp></ruby>`;
-      }
-      if (idx > 0) {
-        // There must be a preceding kanji segment — emit it with the consumed reading
-        html += `<rt>${esc(remaining.slice(0, idx))}</rt><rp>)</rp></ruby>`;
-      }
-      html += esc(seg);
-      remaining = remaining.slice(idx + seg.length);
-    } else {
-      // Kanji segment: open a ruby tag, reading will be filled by next anchor or end
-      html += `<ruby>${esc(seg)}<rp>(</rp>`;
-    }
-  }
-  // If word ends with kanji, close with remaining kana
-  if (hasKanji(segments[segments.length - 1])) {
-    html += `<rt>${esc(remaining)}</rt><rp>)</rp></ruby>`;
-  }
-
-  return html;
-}
-
 function cardTop() {
   const card = S.cards[S.idx];
   const et = S.exerciseType;
   const isNew = !S.history[cardId(card)]?.seen;
   const cardCls = 'card' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '') + (isNew ? ' new-word' : '');
-  const isReverse = et.direction === 'en2jp';
+  const isReverse = et.direction === 'from2to';
   const isAudio = et.audioOnly;
 
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
@@ -740,14 +814,14 @@ function cardTop() {
     // Audio-only: large speaker, no text
     mainWordHtml = '';
   } else if (isReverse) {
-    mainWordHtml = esc(card.en[0].charAt(0).toUpperCase() + card.en[0].slice(1));
+    mainWordHtml = esc(capitalizeAnswer(primarySourceAnswer(card)));
   } else {
-    mainWordHtml = rubyWord(card.jp, card.kana);
+    mainWordHtml = TARGET_PACK.renderTarget(card);
   }
 
   const romajiVis = S.showRomaji ? 'visible' : 'hidden';
   const hintVis = S.showRomaji ? 'gone' : '';
-  const showRomajiArea = !isReverse && !isAudio && card.romaji;
+  const showRomajiArea = !isReverse && !isAudio && !!card.to.transliteration;
 
   return `
     <div class="${cardCls}" id="flashcard">
@@ -770,25 +844,25 @@ function cardTop() {
           ${isReverse ? '' : `<button class="btn-speaker" id="btn-speak">${speakerSvg}</button>`}
           <div class="word-main${isReverse ? ' word-en' : ''}" id="word-tap">${mainWordHtml}</div>
         </div>
-        ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.romaji)}</div>
-        <div class="romaji-hint ${hintVis}" id="rom-hint">tap word for romaji</div>` : ''}
+        ${showRomajiArea ? `<div class="romaji-line ${romajiVis}" id="rom">${esc(card.to.transliteration)}</div>
+        <div class="romaji-hint ${hintVis}" id="rom-hint">${esc(TARGET_PACK.transliterationRevealHint)}</div>` : ''}
       `}
     </div>`;
 }
 
 function wordInfoBanner(card: Word, exerciseType: ExerciseType, correct = false): string {
   const speakerSvg = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
-  const jpHtml = rubyWord(card.jp, card.kana);
+  const targetHtml = TARGET_PACK.renderTarget(card);
   const dir = exerciseType ? exerciseType.direction : null;
   const isAudio = exerciseType ? exerciseType.audioOnly : false;
-  const showJp = dir !== 'jp2en' || isAudio;
+  const showJp = dir !== 'to2from' || isAudio;
   return `<div class="word-info-banner${correct ? ' wib-correct' : ''}">
     ${showJp ? `<div class="wib-row">
-      <span class="wib-jp">${jpHtml}</span>
+      <span class="wib-jp">${targetHtml}</span>
       <button class="wib-play" id="btn-wib-play">${speakerSvg}</button>
     </div>` : `<div class="wib-row"><button class="wib-play" id="btn-wib-play">${speakerSvg}</button></div>`}
-    ${card.romaji ? `<div class="wib-romaji">${esc(card.romaji)}</div>` : ''}
-    <div class="wib-en">${esc(card.en.join(', '))}</div>
+    ${card.to.transliteration ? `<div class="wib-romaji">${esc(card.to.transliteration)}</div>` : ''}
+    <div class="wib-en">${esc(allSourceAnswers(card).join(', '))}</div>
   </div>`;
 }
 
@@ -808,16 +882,11 @@ function tplStudy() {
 
 function tplType() {
   const card = S.cards[S.idx];
-  const isReverse = S.exerciseType.direction === 'en2jp';
-  const placeholder = isReverse ? 'Type the Japanese (romaji or kana)...' : 'Type the English meaning...';
+  const isReverse = S.exerciseType.direction === 'from2to';
+  const placeholder = isReverse
+    ? (COURSE.targetPack === 'ja' ? 'Type the Japanese (romaji or kana)...' : `Type the ${COURSE.labels.to}...`)
+    : `Type the ${COURSE.labels.from} meaning...`;
   const inpCls = 'answer-input' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
-
-  let correctDisplay;
-  if (isReverse) {
-    correctDisplay = `${card.jp} (${card.romaji})`;
-  } else {
-    correctDisplay = card.en[0];
-  }
 
   const fb = S.answered
     ? (S.lastCorrect
@@ -841,8 +910,8 @@ function tplType() {
 
 function tplChoices() {
   const card = S.cards[S.idx];
-  const isReverse = S.exerciseType.direction === 'en2jp';
-  const correctAnswer = isReverse ? card.jp : card.en[0];
+  const isReverse = S.exerciseType.direction === 'from2to';
+  const correctAnswer = isReverse ? card.to.text : primarySourceAnswer(card);
 
   return `<div class="choices">
     ${S.choices.map((opt, i) => {
@@ -851,7 +920,7 @@ function tplChoices() {
         if (opt === correctAnswer) cls += S.selectedChoice === i ? ' choice-correct' : ' choice-missed';
         else if (i === S.selectedChoice) cls += ' choice-wrong';
       }
-      const display = !isReverse && opt ? opt.charAt(0).toUpperCase() + opt.slice(1) : opt;
+      const display = !isReverse ? capitalizeAnswer(opt) : opt;
       return `<button class="${cls}" data-idx="${i}" ${S.answered ? 'disabled' : ''}>
         ${esc(display)}
       </button>`;
@@ -872,7 +941,7 @@ function tplSummary() {
   return `<div class="screen anim">
     <div class="sum-icon ${iconClass}">${emoji}</div>
     <div class="sum-title">${title}</div>
-    <div class="sum-sub">${esc(S.username || 'Learner')} · ${S.exerciseMode === 'mixed' ? 'Mixed' : (S.direction === 'jp2en' ? 'JP→EN' : 'EN→JP')}</div>
+    <div class="sum-sub">${esc(S.username || 'Learner')} · ${S.exerciseMode === 'mixed' ? 'Mixed' : esc(directionLabel(S.direction, true).replace(' → ', '→'))}</div>
     <div class="sum-pct">${pct}<span>%</span></div>
     <div class="stat-grid">
       <div class="stat-box c"><div class="v">${S.correctCount}</div><div class="l">Correct</div></div>
@@ -911,10 +980,9 @@ function tplProgress() {
           const h = S.history[cardId(w)];
           const seen = h ? h.seen : 0;
           const correct = h ? h.correct : 0;
-          const kanaHint = w.kana && w.kana !== w.jp ? ` <span class="skill-word-kana">(${esc(w.kana)})</span>` : '';
           return `<div class="skill-word-row">
-            <span class="skill-word-jp">${esc(w.jp)}${kanaHint}</span>
-            <span class="skill-word-en">${esc(w.en[0])}</span>
+            ${TARGET_PACK.renderTargetProgress(w)}
+            <span class="skill-word-en">${esc(primarySourceAnswer(w))}</span>
             <span class="skill-word-stats">${seen > 0 ? `${correct}/${seen}` : '—'}</span>
             <div class="skill-word-bar-wrap"><div class="skill-bar-fill" style="width:${str}%"></div></div>
             <span class="skill-pct">${str}%</span>
@@ -977,7 +1045,7 @@ function bind(): void {
 
     document.querySelectorAll<HTMLElement>('.dir-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        S.direction = btn.dataset.dir!;
+        S.direction = normalizeDirection(btn.dataset.dir || null);
         document.querySelectorAll<HTMLElement>('.dir-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === S.direction));
       });
     });
@@ -1209,16 +1277,15 @@ function submitType() {
   if (!el || S.answered) return;
   const card = S.cards[S.idx];
   const basicNorm = (s: string) => s.trim().toLowerCase().replace(/^to /, '').replace(/['']/g, "'");
-  const isReverse = S.exerciseType.direction === 'en2jp';
+  const isReverse = S.exerciseType.direction === 'from2to';
 
   let ok;
   if (isReverse) {
-    // Accept romaji or kana (fuzzy romaji matching)
-    const input = fuzzyNorm(el.value);
-    ok = input === fuzzyNorm(card.romaji || '') || el.value.trim() === card.jp || el.value.trim() === (card.kana || '');
+    const input = TARGET_PACK.normalizeTargetInput(el.value, S.settings);
+    ok = !!el.value.trim() && TARGET_PACK.getTargetAnswerSet(card, S.settings).has(input);
   } else {
     const input = fuzzyNorm(el.value);
-    ok = !!el.value.trim() && card.en.some(a => fuzzyNorm(a) === input || basicNorm(a) === basicNorm(el.value));
+    ok = !!el.value.trim() && allSourceAnswers(card).some(answer => fuzzyNorm(answer) === input || basicNorm(answer) === basicNorm(el.value));
   }
 
   S.currentAnswer = el.value;
@@ -1230,8 +1297,8 @@ function submitType() {
 function submitChoice(i: number): void {
   if (S.answered) return;
   const card = S.cards[S.idx];
-  const isReverse = S.exerciseType.direction === 'en2jp';
-  const correctAnswer = isReverse ? card.jp : card.en[0];
+  const isReverse = S.exerciseType.direction === 'from2to';
+  const correctAnswer = isReverse ? card.to.text : primarySourceAnswer(card);
   S.selectedChoice = i;
   recordAnswer(card, S.choices[i] === correctAnswer);
   render('answer');

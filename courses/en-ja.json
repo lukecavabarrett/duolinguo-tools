@@ -1,8 +1,20 @@
 {
   "courseId": "en-ja",
   "title": "Japanese Flash",
+  "brandTitle": "日本語",
+  "brandSubtitle": "Duolingo Flashcards",
+  "brandIcon": "🇯🇵",
   "fromLang": "en",
   "toLang": "ja",
+  "targetPack": "ja",
+  "storagePrefix": "jf",
+  "fetchPath": "build/courses/en-ja/enriched/vocab_data.json",
+  "labels": {
+    "from": "English",
+    "to": "Japanese",
+    "fromShort": "EN",
+    "toShort": "JP"
+  },
   "audioPrefix": "https://d1vq87e9lcf771.cloudfront.net/",
   "inputVocabPath": "data/courses/en-ja/scraped/vocab_data.json",
   "enrichedVocabPath": "build/courses/en-ja/enriched/vocab_data.json",

@@ -151,9 +151,25 @@ def main() -> None:
     else:
         cluster_json = "{}"
 
+    runtime_course = {
+        "courseId": course_id,
+        "title": course.get("title", course_id),
+        "brandTitle": course.get("brandTitle", course.get("title", course_id)),
+        "brandSubtitle": course.get("brandSubtitle", ""),
+        "brandIcon": course.get("brandIcon", ""),
+        "fromLang": course.get("fromLang", args.from_lang),
+        "toLang": course.get("toLang", args.to_lang),
+        "targetPack": course.get("targetPack", course.get("toLang", args.to_lang)),
+        "storagePrefix": course.get("storagePrefix", course_id),
+        "fetchPath": course.get("fetchPath", course["enrichedVocabPath"]),
+        "labels": course.get("labels", {}),
+    }
+    course_json = json.dumps(runtime_course, ensure_ascii=False, separators=(",", ":"))
+
     output = html.replace("APP_JS_PLACEHOLDER", app_js)
     output = output.replace("VOCAB_DATA_PLACEHOLDER", vocab_json)
     output = output.replace("CLUSTER_DATA_PLACEHOLDER", cluster_json)
+    output = output.replace("COURSE_DATA_PLACEHOLDER", course_json)
     output = output.replace("GIT_VERSION_PLACEHOLDER", git_hash)
 
     output_path = ROOT / "index.html"
