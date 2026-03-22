@@ -45,9 +45,12 @@ Course data is cached per pair under `data/courses/<course-id>/`, generated inte
 ## Building from source
 
 ```bash
+nvm use
 npm install
 python3 build.py --course en-ja --target all
 ```
+
+This repo targets Node 24 for both local development and GitHub Actions.
 
 Common commands:
 
