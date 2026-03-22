@@ -160,7 +160,7 @@ This naturally handles edge cases:
 
 ## Next steps
 
-- **Smarter distractor selection** — choose wrong answers that are semantically closer or from the same category, rather than just same-skill random picks
+- ~~**Smarter distractor selection**~~ ✓ — clustered courses use same-cluster distractors; other courses prefer same-skill then nearby-skill distractors
 - ~~**Better wrong-answer banner**~~ ✓ — context-aware: skips info already on the card, shows all English meanings
 - ~~**Fuzzy matching for typed answers**~~ ✓ — accepts `o`/`ō`/`ou`/`oo`, Hepburn/Nihon-shiki variants, hyphens, etc.
 - ~~**Improved progress algorithm**~~ ✓ — strength-based progression with automatic skill unlocking
