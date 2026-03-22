@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from html import unescape
+from html import escape, unescape
 import json
 import os
 from pathlib import Path
@@ -47,8 +47,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--from", dest="from_lang", default="en", help="Source language code")
     parser.add_argument("--to", dest="to_lang", default="ja", help="Target language code")
     parser.add_argument("--course", help="Override course id, e.g. en-ja")
+    parser.add_argument("--target", choices=["standalone", "site", "all"], default="all", help="Build target")
     parser.add_argument("--force", action="store_true", help="Re-scrape vocab even if cached data exists")
-    parser.add_argument("--output", help="Optional extra output path for the generated HTML")
+    parser.add_argument("--output", help="Optional extra output path for the standalone HTML")
     return parser.parse_args()
 
 
@@ -416,7 +417,7 @@ def build_legacy_japanese_columnar(vocab: dict, audio_prefix: str) -> dict:
     }
 
 
-def runtime_course(course: dict) -> dict:
+def runtime_course(course: dict, *, fetch_path: str | None = None) -> dict:
     return {
         "courseId": course["courseId"],
         "title": course["title"],
@@ -427,7 +428,7 @@ def runtime_course(course: dict) -> dict:
         "toLang": course["toLang"],
         "targetPack": course["targetPack"],
         "storagePrefix": course["storagePrefix"],
-        "fetchPath": course["fetchPath"],
+        "fetchPath": fetch_path or course["fetchPath"],
         "labels": course["labels"],
     }
 
@@ -455,6 +456,188 @@ def build_runtime_vocab(course: dict, raw_vocab: dict) -> dict:
         fail(result)
     done(s, result.stdout.strip())
     return read_json(ROOT / course["enrichedVocabPath"])
+
+
+def render_html(
+    template: str,
+    *,
+    course: dict,
+    app_js: str,
+    course_json: str,
+    vocab_json: str,
+    cluster_json: str,
+    git_hash: str,
+    pwa: bool,
+    embed_vocab: bool,
+) -> str:
+    pwa_head = ""
+    pwa_bootstrap = ""
+    if pwa:
+        pwa_head = "\n  ".join([
+            '<link rel="manifest" href="manifest.webmanifest">',
+            f'<meta name="application-name" content="{course["title"]}">',
+            f'<meta name="apple-mobile-web-app-title" content="{course["title"]}">',
+        ])
+        pwa_bootstrap = """<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('Service worker registration failed', err));
+  });
+}
+</script>"""
+
+    output = template.replace("APP_TITLE_PLACEHOLDER", course["title"])
+    output = output.replace("APP_LANG_PLACEHOLDER", course["toLang"])
+    output = output.replace("APP_JS_PLACEHOLDER", app_js)
+    output = output.replace("COURSE_DATA_PLACEHOLDER", course_json)
+    output = output.replace("VOCAB_DATA_PLACEHOLDER", vocab_json if embed_vocab else "null")
+    output = output.replace("CLUSTER_DATA_PLACEHOLDER", cluster_json)
+    output = output.replace("GIT_VERSION_PLACEHOLDER", git_hash)
+    output = output.replace("PWA_HEAD_PLACEHOLDER", pwa_head)
+    output = output.replace("PWA_BOOTSTRAP_PLACEHOLDER", pwa_bootstrap)
+    return output
+
+
+def build_manifest(course: dict) -> str:
+    manifest = {
+        "name": course["title"],
+        "short_name": course["title"],
+        "lang": course["toLang"],
+        "start_url": "./",
+        "scope": "./",
+        "display": "standalone",
+        "background_color": "#131F24",
+        "theme_color": "#58CC02",
+        "icons": [
+            {
+                "src": "icon.svg",
+                "sizes": "any",
+                "type": "image/svg+xml",
+                "purpose": "any",
+            }
+        ],
+    }
+    return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+
+
+def build_icon_svg(course: dict) -> str:
+    icon_text = course.get("brandIcon") or course["labels"]["toShort"]
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#58CC02"/>
+  <circle cx="256" cy="256" r="168" fill="#ffffff" opacity="0.14"/>
+  <text x="256" y="282" text-anchor="middle" font-size="190">{escape(icon_text)}</text>
+</svg>
+"""
+
+
+def build_service_worker(course_id: str, git_hash: str) -> str:
+    cache_name = f"flashcards-{course_id}-{git_hash}"
+    app_shell = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./vocab-data.json"]
+    return f"""const CACHE_NAME = {cache_name!r};
+const APP_SHELL = {json.dumps(app_shell, ensure_ascii=False)};
+
+self.addEventListener('install', event => {{
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
+}});
+
+self.addEventListener('activate', event => {{
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME && key.startsWith('flashcards-')).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+}});
+
+self.addEventListener('fetch', event => {{
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {{
+    event.respondWith((async () => {{
+      try {{
+        const response = await fetch(request);
+        const cache = await caches.open(CACHE_NAME);
+        cache.put('./index.html', response.clone());
+        return response;
+      }} catch (error) {{
+        return (await caches.match(request)) || (await caches.match('./index.html'));
+      }}
+    }})());
+    return;
+  }}
+
+  event.respondWith((async () => {{
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    try {{
+      const response = await fetch(request);
+      if (response && response.ok) {{
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, response.clone());
+      }}
+      return response;
+    }} catch (error) {{
+      return Response.error();
+    }}
+  }})());
+}});
+"""
+
+
+def build_course_chooser_html(courses: list[dict]) -> str:
+    cards = "\n".join(
+        f"""      <a class="course-card" href="courses/{escape(course['courseId'])}/">
+        <div class="course-icon">{escape(course.get('brandIcon') or course['labels']['toShort'])}</div>
+        <div class="course-title">{escape(course['title'])}</div>
+        <div class="course-sub">{escape(course['labels']['from'])} → {escape(course['labels']['to'])}</div>
+      </a>"""
+        for course in courses
+    )
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard Courses</title>
+  <style>
+    *{{box-sizing:border-box;margin:0;padding:0}}
+    body{{min-height:100vh;background:#131F24;color:#fff;font-family:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:2rem}}
+    main{{max-width:880px;margin:0 auto}}
+    h1{{font-size:2rem;font-weight:800;margin-bottom:.5rem}}
+    p{{color:#8BA5B0;margin-bottom:1.5rem}}
+    .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}}
+    .course-card{{display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.25rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
+    .course-card:hover{{transform:translateY(-1px)}}
+    .course-icon{{font-size:2rem;margin-bottom:.75rem}}
+    .course-title{{font-size:1.05rem;font-weight:800;margin-bottom:.25rem}}
+    .course-sub{{color:#8BA5B0;font-size:.92rem}}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Flashcard Courses</h1>
+    <p>Select a course. Each course page can be installed and used offline after the first online load.</p>
+    <div class="grid">
+{cards}
+    </div>
+  </main>
+</body>
+</html>
+"""
+
+
+def update_site_chooser(site_root: Path) -> None:
+    course_json_paths = sorted((site_root / "courses").glob("*/course.json"))
+    courses = [read_json(path) for path in course_json_paths]
+    if not courses:
+        return
+    write_text(site_root / "index.html", build_course_chooser_html(courses))
 
 
 def main() -> None:
@@ -500,11 +683,11 @@ def main() -> None:
     app_kb = len(app_js.encode("utf-8")) / 1024
     done(s, f"{app_kb:.1f} KB")
 
-    columnar = pack_vocab(course, vocab)
-    vocab_json = json.dumps(columnar, ensure_ascii=False, separators=(",", ":"))
+    packed_vocab = pack_vocab(course, vocab)
+    vocab_json = json.dumps(packed_vocab, ensure_ascii=False, separators=(",", ":"))
 
     with (ROOT / "src" / "template.html").open("r", encoding="utf-8") as f:
-        html = f.read()
+        template = f.read()
 
     git_hash = subprocess.run(
         ["git", "rev-parse", "--short", "HEAD"],
@@ -518,25 +701,67 @@ def main() -> None:
     else:
         cluster_json = "{}"
 
-    course_json = json.dumps(runtime_course(course), ensure_ascii=False, separators=(",", ":"))
+    built_paths: list[Path] = []
 
-    output = html.replace("APP_JS_PLACEHOLDER", app_js)
-    output = output.replace("VOCAB_DATA_PLACEHOLDER", vocab_json)
-    output = output.replace("CLUSTER_DATA_PLACEHOLDER", cluster_json)
-    output = output.replace("COURSE_DATA_PLACEHOLDER", course_json)
-    output = output.replace("GIT_VERSION_PLACEHOLDER", git_hash)
+    if args.target in ("standalone", "all"):
+        standalone_course_json = json.dumps(runtime_course(course), ensure_ascii=False, separators=(",", ":"))
+        standalone_html = render_html(
+            template,
+            course=course,
+            app_js=app_js,
+            course_json=standalone_course_json,
+            vocab_json=vocab_json,
+            cluster_json=cluster_json,
+            git_hash=git_hash,
+            pwa=False,
+            embed_vocab=True,
+        )
 
-    output_path = ROOT / "index.html"
-    output_path.write_text(output, encoding="utf-8")
-    if args.output:
-        extra_output = (ROOT / args.output).resolve()
-        extra_output.parent.mkdir(parents=True, exist_ok=True)
-        extra_output.write_text(output, encoding="utf-8")
+        root_output = ROOT / "index.html"
+        root_output.write_text(standalone_html, encoding="utf-8")
+        built_paths.append(root_output)
 
-    size_kb = len(output.encode("utf-8")) / 1024
-    data_kb = len(vocab_json.encode("utf-8")) / 1024
+        standalone_path = write_text(ROOT / "dist" / course_id / "standalone.html", standalone_html)
+        built_paths.append(standalone_path)
+
+        if args.output:
+            extra_output = write_text((ROOT / args.output).resolve(), standalone_html)
+            built_paths.append(extra_output)
+
+    if args.target in ("site", "all"):
+        site_root = ROOT / "dist" / "site"
+        course_dir = site_root / "courses" / course_id
+        site_course = runtime_course(course, fetch_path="./vocab-data.json")
+        site_course_json = json.dumps(site_course, ensure_ascii=False, separators=(",", ":"))
+        site_html = render_html(
+            template,
+            course=course,
+            app_js=app_js,
+            course_json=site_course_json,
+            vocab_json=vocab_json,
+            cluster_json=cluster_json,
+            git_hash=git_hash,
+            pwa=True,
+            embed_vocab=False,
+        )
+
+        built_paths.append(write_text(course_dir / "index.html", site_html))
+        built_paths.append(write_text(course_dir / "vocab-data.json", json.dumps(packed_vocab, ensure_ascii=False, separators=(",", ":"))))
+        built_paths.append(write_json(course_dir / "course.json", site_course))
+        built_paths.append(write_text(course_dir / "manifest.webmanifest", build_manifest(course)))
+        built_paths.append(write_text(course_dir / "icon.svg", build_icon_svg(course)))
+        built_paths.append(write_text(course_dir / "service-worker.js", build_service_worker(course_id, git_hash)))
+
+        update_site_chooser(site_root)
+        chooser_path = site_root / "index.html"
+        if chooser_path.exists():
+            built_paths.append(chooser_path)
+
+    size_kb = len(vocab_json.encode("utf-8")) / 1024
     total = time.time() - t0
-    print(f"\nBuilt {output_path.relative_to(ROOT)} ({size_kb:.0f} KB, JS: {app_kb:.1f} KB, data: {data_kb:.0f} KB)")
+    rel_paths = ", ".join(str(path.relative_to(ROOT)) for path in built_paths)
+    print(f"\nBuilt {rel_paths}")
+    print(f"JS: {app_kb:.1f} KB, packed vocab: {size_kb:.0f} KB, target: {args.target}")
     print(f"Words: {len(vocab['words'])}, Skills: {len(vocab['skills'])}, Course: {course_id}")
     print(f"Total: {total:.2f}s")
 

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <!--
-  日本語 Flash v2 — Duolingo-style Japanese Flashcards
-  Self-contained HTML app. Works offline on Android Chrome.
-  Data: vocab_data.json embedded at build time, or loaded inline.
-  Audio: Duolingo CDN (d1vq87e9lcf771.cloudfront.net)
+  Generic flashcard template.
+  Data may be embedded at build time or fetched when served.
+  Word audio may still come from the Duolingo CDN.
 -->
-<html lang="en">
+<html lang="APP_LANG_PLACEHOLDER">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#58CC02">
-  <title>日本語 Flash</title>
+  <title>APP_TITLE_PLACEHOLDER</title>
+  PWA_HEAD_PLACEHOLDER
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;700&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -891,5 +891,6 @@
 
 <script>window.__VERSION__="GIT_VERSION_PLACEHOLDER";</script>
 <script>APP_JS_PLACEHOLDER</script>
+PWA_BOOTSTRAP_PLACEHOLDER
 </body>
 </html>
