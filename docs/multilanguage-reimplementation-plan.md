@@ -63,7 +63,7 @@ data/
         meta.json
       manual/
         skill_clusters.json
-        overrides.json
+        overrides.jsonc
       unused/
         course_structure.json
         stories/

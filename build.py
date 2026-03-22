@@ -95,6 +95,16 @@ def read_json(path: Path) -> dict:
         return json.load(f)
 
 
+def read_jsonc(path: Path) -> dict:
+    lines: list[str] = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if re.match(r"^\s*//", line):
+                continue
+            lines.append(line)
+    return json.loads("".join(lines))
+
+
 def split_course_id(course_id: str) -> tuple[str, str]:
     if "-" not in course_id:
         print(f"Invalid course id {course_id!r}: expected <from>-<to>")
@@ -330,12 +340,22 @@ def scrape_detail(course: dict, scrape_meta: dict, fetched: bool, forced: bool) 
     return f"reused cache {vocab_path}"
 
 
+def manual_overrides_path_for(course: dict) -> Path:
+    configured = course.get("overridesPath")
+    if configured:
+        return ROOT / configured
+    scraped_path = ROOT / course["inputVocabPath"]
+    return scraped_path.parent.parent / "manual" / "overrides.jsonc"
+
+
 def enrich_detail(course: dict) -> str:
     output_path = Path(course["enrichedVocabPath"])
     enrich_script = course.get("enrichScript")
+    overrides_path = manual_overrides_path_for(course)
+    overrides_detail = f" with manual overrides from {overrides_path.relative_to(ROOT)}" if overrides_path.exists() else ""
     if enrich_script:
-        return f"generated {output_path} via {enrich_script}"
-    return f"passthrough copy -> {output_path}"
+        return f"generated {output_path} via {enrich_script}{overrides_detail}"
+    return f"passthrough copy -> {output_path}{overrides_detail}"
 
 
 def hydrate_course_labels(course: dict, scrape_meta: dict, explicit: bool) -> dict:
@@ -504,22 +524,72 @@ def pack_vocab(course: dict, vocab: dict) -> dict:
     return build_generic_columnar(vocab, audio_prefix)
 
 
+def word_override_key(word: dict) -> str:
+    skill = str(word.get("skill", "") or "")
+    target = str(word.get("to", word.get("jp", "")) or "")
+    return f"{skill}|{target}"
+
+
+def apply_manual_overrides(course: dict, vocab: dict) -> dict:
+    path = manual_overrides_path_for(course)
+    if not path.exists():
+        return vocab
+
+    overrides = read_jsonc(path)
+    words = vocab.get("words")
+    if not isinstance(words, list):
+        return vocab
+
+    seen_keys: set[str] = set()
+    applied = 0
+    for word in words:
+        if not isinstance(word, dict):
+            continue
+        key = word_override_key(word)
+        seen_keys.add(key)
+        override = overrides.get(key)
+        if not isinstance(override, dict):
+            continue
+        preferred = str(override.get("preferredFrom", override.get("preferred_from", "")) or "").strip()
+        from_values = word.get("from")
+        if not preferred or not isinstance(from_values, list):
+            continue
+        if preferred not in from_values:
+            print(f"Warning: manual override {key!r} prefers {preferred!r}, but that value is not in the source aliases")
+            continue
+        if from_values[0] == preferred:
+            continue
+        word["from"] = [preferred, *[value for value in from_values if value != preferred]]
+        applied += 1
+
+    missing = sorted(key for key in overrides if key not in seen_keys)
+    for key in missing:
+        print(f"Warning: manual override {key!r} did not match any scraped word")
+
+    if applied:
+        print(f"  Applied {applied} manual overrides from {path.relative_to(ROOT)}.")
+    return vocab
+
+
 def build_runtime_vocab(course: dict, raw_vocab: dict) -> dict:
     enrich_script = course.get("enrichScript")
     if not enrich_script:
-        write_json(ROOT / course["enrichedVocabPath"], raw_vocab)
-        return raw_vocab
+        vocab = raw_vocab
+    else:
+        s = step("Enriching vocab")
+        result = subprocess.run(
+            ["node", enrich_script, course["inputVocabPath"], course["enrichedVocabPath"]],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            fail(result)
+        done(s, result.stdout.strip())
+        vocab = read_json(ROOT / course["enrichedVocabPath"])
 
-    s = step("Enriching vocab")
-    result = subprocess.run(
-        ["node", enrich_script, course["inputVocabPath"], course["enrichedVocabPath"]],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        fail(result)
-    done(s, result.stdout.strip())
-    return read_json(ROOT / course["enrichedVocabPath"])
+    vocab = apply_manual_overrides(course, vocab)
+    write_json(ROOT / course["enrichedVocabPath"], vocab)
+    return vocab
 
 
 def render_html(

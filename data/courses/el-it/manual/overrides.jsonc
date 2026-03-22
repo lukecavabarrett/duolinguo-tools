@@ -1,0 +1,15 @@
+{
+  // Native Greek term preferred over borrowed transliteration.
+  "Cafe|gelato": { "preferredFrom": "παγωτό" },
+
+  // Citation form preferred over enclitic accent variants.
+  "Learning|programma": { "preferredFrom": "πρόγραμμα" },
+  "Complaint|telefono": { "preferredFrom": "τηλέφωνο" },
+  "Work|presentazione": { "preferredFrom": "παρουσίαση" },
+  "Our Room|pavimento": { "preferredFrom": "πάτωμα" },
+
+  // Citation noun preferred over inflected or case-marked forms.
+  "Lost|vicino": { "preferredFrom": "γείτονας" },
+  "My Life|vicino": { "preferredFrom": "γείτονας" },
+  "Work|collega": { "preferredFrom": "συνάδελφος" }
+}
