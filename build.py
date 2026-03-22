@@ -21,6 +21,15 @@ DEFAULT_BRAND_SUBTITLE = "Duolingo Flashcards"
 DEFAULT_AUDIO_PREFIX = "https://d1vq87e9lcf771.cloudfront.net/"
 DEFAULT_SCRAPE_BEHAVIOR = "default"
 JAPANESE_SCRAPE_BEHAVIOR = "ja"
+LANGUAGE_FLAGS = {
+    "en": "🇺🇸",
+    "es": "🇪🇸",
+    "fr": "🇫🇷",
+    "de": "🇩🇪",
+    "it": "🇮🇹",
+    "ja": "🇯🇵",
+    "pt": "🇵🇹",
+}
 
 
 def step(name: str) -> float:
@@ -87,6 +96,10 @@ def load_course_config(course_id: str) -> dict | None:
         return json.load(f)
 
 
+def language_flag(lang: str) -> str:
+    return LANGUAGE_FLAGS.get(lang.lower(), "")
+
+
 def make_default_course_config(course_id: str, from_lang: str, to_lang: str) -> dict:
     data_root = Path("data") / "courses" / course_id
     build_root = Path("build") / "courses" / course_id
@@ -95,7 +108,7 @@ def make_default_course_config(course_id: str, from_lang: str, to_lang: str) -> 
         "title": f"{to_lang.upper()} Flash",
         "brandTitle": to_lang.upper(),
         "brandSubtitle": DEFAULT_BRAND_SUBTITLE,
-        "brandIcon": to_lang.upper(),
+        "brandIcon": language_flag(to_lang) or to_lang.upper(),
         "fromLang": from_lang,
         "toLang": to_lang,
         "targetPack": "ja" if to_lang == "ja" else "default",
@@ -619,9 +632,18 @@ self.addEventListener('fetch', event => {{
 
 
 def build_course_chooser_html(courses: list[dict]) -> str:
+    def chooser_icon(course: dict) -> str:
+        target_icon = course.get("brandIcon") or language_flag(course["toLang"]) or course["labels"]["toShort"]
+        source_icon = language_flag(course["fromLang"])
+        badge = f'<div class="course-icon-badge">{escape(source_icon)}</div>' if source_icon else ""
+        return f"""<div class="course-icon-wrap">
+          <div class="course-icon-main">{escape(target_icon)}</div>
+          {badge}
+        </div>"""
+
     cards = "\n".join(
         f"""      <a class="course-card" href="courses/{escape(course['courseId'])}/">
-        <div class="course-icon">{escape(course.get('brandIcon') or course['labels']['toShort'])}</div>
+        {chooser_icon(course)}
         <div class="course-title">{escape(course['title'])}</div>
         <div class="course-sub">{escape(course['labels']['from'])} → {escape(course['labels']['to'])}</div>
       </a>"""
@@ -642,7 +664,9 @@ def build_course_chooser_html(courses: list[dict]) -> str:
     .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}}
     .course-card{{display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.25rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
     .course-card:hover{{transform:translateY(-1px)}}
-    .course-icon{{font-size:2rem;margin-bottom:.75rem}}
+    .course-icon-wrap{{position:relative;width:3rem;height:3rem;margin-bottom:.75rem}}
+    .course-icon-main{{font-size:2.2rem;line-height:1}}
+    .course-icon-badge{{position:absolute;top:-.15rem;right:-.2rem;font-size:.95rem;line-height:1;background:#131F24;border:1px solid #2B4A56;border-radius:999px;padding:.08rem .16rem;box-shadow:0 2px 0 rgba(0,0,0,.2)}}
     .course-title{{font-size:1.05rem;font-weight:800;margin-bottom:.25rem}}
     .course-sub{{color:#8BA5B0;font-size:.92rem}}
   </style>
