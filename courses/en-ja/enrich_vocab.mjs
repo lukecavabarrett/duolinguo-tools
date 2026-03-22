@@ -1,12 +1,12 @@
-// Enrich scraped vocab data with kana readings.
-// Called by build.py: reads input vocab JSON → writes enriched vocab JSON
+// Enrich Japanese scraped vocab data with kana readings.
+// Called by build.py: reads input vocab JSON -> writes enriched vocab JSON
 //
 // Strategy — best of both worlds, no regressions:
 // 1. Words already in kana: use jp directly (preserves katakana)
-// 2. Kanji words: run both wanakana (romaji → kana) and kuroshiro (kanji → kana)
+// 2. Kanji words: run both wanakana (romaji -> kana) and kuroshiro (kanji -> kana)
 //    - If wanakana fails (bad romaji): use kuroshiro
 //    - If kuroshiro has issues (ambiguous kanji like 時): use wanakana
-//    - Otherwise: prefer kuroshiro for long-vowel accuracy (ō → おう vs おお),
+//    - Otherwise: prefer kuroshiro for long-vowel accuracy (ō -> おう vs おお),
 //      but use wanakana when they agree (ignoring long-vowel differences)
 
 import { toHiragana, isKana } from 'wanakana';
@@ -17,21 +17,21 @@ import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const args = process.argv.slice(2);
-const inputPath = args[0] ? join(root, args[0]) : join(root, 'data/scraped/vocab_data.json');
-const outputPath = args[1] ? join(root, args[1]) : join(root, 'data/enriched/vocab_data.json');
+const inputPath = args[0]
+  ? join(root, args[0])
+  : join(root, 'data/courses/en-ja/scraped/vocab_data.json');
+const outputPath = args[1]
+  ? join(root, args[1])
+  : join(root, 'build/courses/en-ja/enriched/vocab_data.json');
 const data = JSON.parse(readFileSync(inputPath, 'utf8'));
 
 function normalizeRomaji(s) {
   let r = s;
-  // Expand macron vowels (ō → ou matches Japanese hiragana convention)
   r = r.replace(/ā/g, 'aa').replace(/ī/g, 'ii').replace(/ū/g, 'uu').replace(/ē/g, 'ee').replace(/ō/g, 'ou');
-  // mb/mp → nb/np
   r = r.replace(/m([bp])/g, 'n$1');
-  // tch → cch
   r = r.replace(/tch/g, 'cch');
-  // dz → z
   r = r.replace(/dz/g, 'z');
   return r;
 }
@@ -40,7 +40,6 @@ function isAllKana(s) {
   return isKana(s.replace(/々/g, ''));
 }
 
-// Normalize long vowels for comparison: おう/おお → お, etc.
 function normalizeLongVowels(s) {
   return s.replace(/([あかさたなはまやらわがざだばぱ])あ/g, '$1')
           .replace(/([いきしちにひみりぎじぢびぴ])い/g, '$1')
@@ -52,10 +51,8 @@ function normalizeLongVowels(s) {
 const kuroshiro = new Kuroshiro();
 await kuroshiro.init(new KuromojiAnalyzer());
 
-// Romaji corrections for wanakana (scraped romaji is ambiguous or wrong for these)
-// Key: "jp|skill", value: corrected romaji
 const ROMAJI_FIXES = {
-  "本や|Bookstore": "hon'ya",  // honya is ambiguous: ほにゃ vs ほんや
+  "本や|Bookstore": "hon'ya",
 };
 
 let fromJp = 0, fromWanakana = 0, fromKuroshiro = 0;
@@ -75,35 +72,28 @@ for (const word of data.words) {
   const kkHasLatin = /[a-zA-Z]/.test(kkResult);
 
   if (wkFailed) {
-    // Wanakana failed — use kuroshiro
     word.kana = kkResult;
     fromKuroshiro++;
   } else if (kkHasLatin) {
-    // Kuroshiro failed — use wanakana
     word.kana = wkResult;
     fromWanakana++;
   } else if (normalizeLongVowels(wkResult) === normalizeLongVowels(kkResult)) {
-    // They agree (ignoring long vowel spelling) — use kuroshiro for vowel accuracy
     word.kana = kkResult;
     fromKuroshiro++;
   } else {
-    // They disagree on the reading itself
     const wkHasSpaces = wkResult.includes(' ');
     const kkHasKatakana = /[\u30A0-\u30FF]/.test(kkResult);
 
     if (kkHasKatakana && !kkHasLatin) {
-      // Kuroshiro left mixed katakana (but no Latin) — wanakana's all-hiragana is better
       word.kana = wkResult;
       fromWanakana++;
     } else if (wkHasSpaces) {
-      // Wanakana has spaces (bad romaji from scrape) — trust kuroshiro
       word.kana = kkResult;
       fromKuroshiro++;
     } else {
-      // Genuine disagreement, clean romaji — prefer wanakana (respects scraped reading)
       word.kana = wkResult;
       fromWanakana++;
-      disagreements.push(`  ${word.jp} [${word.skill}] romaji=${word.romaji} → wk=${wkResult} kk=${kkResult}`);
+      disagreements.push(`  ${word.jp} [${word.skill}] romaji=${word.romaji} -> wk=${wkResult} kk=${kkResult}`);
     }
   }
 }

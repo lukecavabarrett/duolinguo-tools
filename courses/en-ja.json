@@ -22,5 +22,5 @@
   "clusterPath": "data/courses/en-ja/manual/skill_clusters.json",
   "scrapeBehavior": "ja",
   "packFormat": "legacy-ja",
-  "enrichScript": "scripts/enrich_vocab.mjs"
+  "enrichScript": "courses/en-ja/enrich_vocab.mjs"
 }

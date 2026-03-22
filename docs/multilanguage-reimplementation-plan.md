@@ -196,7 +196,7 @@ Acceptance rule for the scrape slice:
 
 - introducing the shared scraper must not change Japanese field names
 - introducing the shared scraper must not change Japanese field meanings
-- Japanese enrich input must remain compatible with the current `scripts/enrich_vocab.mjs`
+- Japanese enrich input must remain compatible with the current `courses/en-ja/enrich_vocab.mjs`
 
 ### Baseline Japanese Enriched Data
 
