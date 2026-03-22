@@ -1,0 +1,24 @@
+{
+  "courseId": "en-it",
+  "title": "Italian Flash",
+  "brandTitle": "Italiano",
+  "brandSubtitle": "Duolingo Flashcards",
+  "brandIcon": "🇮🇹",
+  "fromLang": "en",
+  "toLang": "it",
+  "targetPack": "default",
+  "storagePrefix": "flashcards:en-it",
+  "fetchPath": "build/courses/en-it/enriched/vocab_data.json",
+  "wordAudioMode": "remote",
+  "labels": {
+    "from": "English",
+    "to": "Italian",
+    "fromShort": "EN",
+    "toShort": "IT"
+  },
+  "audioPrefix": "https://d1vq87e9lcf771.cloudfront.net/",
+  "inputVocabPath": "data/courses/en-it/scraped/vocab_data.json",
+  "enrichedVocabPath": "build/courses/en-it/enriched/vocab_data.json",
+  "scrapeBehavior": "default",
+  "packFormat": "generic"
+}
