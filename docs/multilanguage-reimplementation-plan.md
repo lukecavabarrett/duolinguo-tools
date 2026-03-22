@@ -40,6 +40,137 @@ For `en-ja`, after each implementation commit:
 - Runtime data shape is generic.
   - Course-specific raw data may exist before normalization.
 
+## Repository Layout
+
+The reimplementation should make a clear distinction between:
+
+- committed source-of-truth data
+- generated intermediate build data
+- generated deploy artifacts
+
+### Source Tree To Keep In Git
+
+```text
+courses/
+  en-ja.json
+  <course-id>.json
+
+data/
+  courses/
+    en-ja/
+      scraped/
+        vocab_data.json
+        meta.json
+      manual/
+        skill_clusters.json
+        overrides.json
+      unused/
+        course_structure.json
+        stories/
+          stories_index.json
+          stories_data.json
+    <course-id>/
+      scraped/
+        vocab_data.json
+        meta.json
+      manual/
+        ...
+      unused/
+        ...
+
+docs/
+scripts/
+src/
+```
+
+Meaning of each area:
+
+- `courses/`
+  - build configuration per specialized course
+  - source language, target language, field mapping, scrape behavior, enrich hook, labels, packaging policy
+- `data/courses/<course-id>/scraped/`
+  - committed cached raw scrape results
+  - this is the build input snapshot we want to preserve in Git
+- `data/courses/<course-id>/manual/`
+  - committed non-generated data that is curated or hand-maintained
+  - examples:
+    - `skill_clusters.json`
+    - explicit overrides
+    - manually curated aliases
+- `data/courses/<course-id>/unused/`
+  - committed archived data that belongs to the course but is not used by the active app yet
+  - examples:
+    - Japanese stories scrape
+    - Japanese course structure scrape
+
+### Generated Build Data To Keep Out Of Git
+
+```text
+build/
+  courses/
+    <course-id>/
+      enriched/
+        vocab_data.json
+      packed/
+        vocab-data.json
+```
+
+Meaning:
+
+- `build/courses/<course-id>/enriched/`
+  - deterministic build intermediates
+  - generated from scraped data plus enrich hooks
+  - should not be committed by default
+- `build/courses/<course-id>/packed/`
+  - compact runtime payload prepared for embedding or serving
+  - should not be committed by default
+
+### Generated Deploy Outputs To Keep Out Of Git By Default
+
+```text
+dist/
+  <course-id>/
+    standalone.html
+    site/
+      index.html
+      vocab-data.json
+      manifest.webmanifest
+      service-worker.js
+```
+
+Meaning:
+
+- `dist/` is local build output
+- `dist/` is not source of truth
+- `dist/` should not be committed by default
+
+If GitHub Pages is later deployed directly from repository contents, that publication step should be treated as a release concern, not the source-of-truth layout for the repo itself.
+
+## Data Retention Policy
+
+### Keep In Git
+
+- specialized course configs in `courses/`
+- raw scraped vocab snapshots in `data/courses/<course-id>/scraped/`
+- scrape metadata such as source URL / timestamp / labels in `meta.json`
+- curated course-owned files in `data/courses/<course-id>/manual/`
+- archived but still valuable course-owned data in `data/courses/<course-id>/unused/`
+
+### Do Not Keep In Git
+
+- generated enriched vocab files
+- generated packed runtime payloads
+- local `dist/` build outputs
+- downloaded third-party CDN audio binaries
+- temporary experiments for courses that are not intentionally being added to the repo
+
+### Rationale
+
+- scraped vocab is the cached source snapshot the user asked to keep in the repo
+- enriched and packed data are reproducible from committed inputs plus scripts
+- keeping generated data out of Git reduces duplication and avoids repository bloat
+- keeping unused but valuable course data in `unused/` prevents accidental loss without mixing it into the active build
+
 ## Data Contracts
 
 ### Baseline Japanese Raw Scrape
@@ -233,14 +364,16 @@ Acceptance:
 
 ### 3. Per-Course Data Layout
 
-- Move Japanese data under `data/courses/en-ja/`.
-- Update the build to read from the new paths.
+- Move Japanese committed source data under `data/courses/en-ja/`.
+- Split source data from generated intermediates.
+- Put generated enriched data under `build/courses/en-ja/`.
 - Keep the runtime output unchanged.
 
 Acceptance:
 
 - `en-ja` build still matches baseline behavior.
 - No new generic runtime abstractions yet.
+- committed Japanese source data is clearly separated from generated data.
 
 ### 4. Generic Build CLI
 
