@@ -4,6 +4,7 @@
   "brandTitle": "Italiano",
   "brandSubtitle": "Duolingo Flashcards",
   "brandIcon": "🇮🇹",
+  "experimental": true,
   "fromLang": "el",
   "toLang": "it",
   "targetPack": "default",

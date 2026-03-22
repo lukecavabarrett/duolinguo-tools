@@ -486,6 +486,7 @@ def runtime_course(course: dict, *, fetch_path: str | None = None) -> dict:
         "brandTitle": course["brandTitle"],
         "brandSubtitle": course["brandSubtitle"],
         "brandIcon": course["brandIcon"],
+        "experimental": course.get("experimental", False),
         "fromLang": course["fromLang"],
         "toLang": course["toLang"],
         "targetPack": course["targetPack"],
@@ -654,6 +655,11 @@ self.addEventListener('fetch', event => {{
 
 
 def build_course_chooser_html(courses: list[dict]) -> str:
+    ordered_courses = sorted(
+        courses,
+        key=lambda course: (bool(course.get("experimental", False)), course["courseId"]),
+    )
+
     def chooser_icon(course: dict) -> str:
         target_icon = course.get("brandIcon") or language_flag(course["toLang"]) or course["labels"]["toShort"]
         source_icon = language_flag(course["fromLang"])
@@ -665,6 +671,7 @@ def build_course_chooser_html(courses: list[dict]) -> str:
 
     cards = "\n".join(
         f"""      <a class="course-card" href="courses/{escape(course['courseId'])}/">
+        {'<div class="course-status">Experimental</div>' if course.get('experimental') else ''}
         <div class="course-head">
           {chooser_icon(course)}
           <div class="course-meta">
@@ -673,7 +680,7 @@ def build_course_chooser_html(courses: list[dict]) -> str:
           </div>
         </div>
       </a>"""
-        for course in courses
+        for course in ordered_courses
     )
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -688,8 +695,9 @@ def build_course_chooser_html(courses: list[dict]) -> str:
     h1{{font-size:2rem;font-weight:800;margin-bottom:.5rem}}
     p{{color:#8BA5B0;margin-bottom:1.5rem}}
     .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}}
-    .course-card{{display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.1rem 1.15rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
+    .course-card{{position:relative;display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.1rem 1.15rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
     .course-card:hover{{transform:translateY(-1px)}}
+    .course-status{{position:absolute;top:.7rem;right:.75rem;display:inline-flex;align-items:center;padding:.22rem .48rem;border-radius:999px;background:#FFE08A;color:#5E4300;font-size:.6rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 0 rgba(0,0,0,.12)}}
     .course-head{{display:flex;align-items:center;gap:.9rem;min-height:3.2rem}}
     .course-icon-wrap{{position:relative;flex:0 0 3rem;width:3rem;height:3rem}}
     .course-icon-main{{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:2.2rem;line-height:1}}
