@@ -831,6 +831,12 @@ function tplSettings() {
   const shellKB = (shellBytes() / 1024).toFixed(0);
   const vocabKB = (VOCAB_BYTES / 1024).toFixed(0);
   const totalKB = ((shellBytes() + VOCAB_BYTES) / 1024).toFixed(0);
+  const buildId = (window as any).__BUILD__ || 'dev';
+  const versionId = (window as any).__VERSION__ || 'dev';
+  const versionUrl = (window as any).__VERSION_URL__ || '';
+  const versionHtml = versionUrl
+    ? `<a href="${esc(versionUrl)}" target="_blank" rel="noopener noreferrer">${esc(versionId)}</a>`
+    : esc(versionId);
   const tog = (key: string, on: boolean) => `<div class="toggle-switch${on ? ' on' : ''}" data-toggle="${key}"></div>`;
   const extraLeniencyRows = TARGET_PACK.getLeniencyToggles().map(toggle => `
       <div class="toggle-row">
@@ -888,7 +894,7 @@ function tplSettings() {
       ${wordCount} words · ${skillCount} skills<br>
       Shell: ${shellKB} KB · Vocab: ${vocabKB} KB<br>
       Approx total: ${totalKB} KB · Saved data: ${lsKB} KB<br>
-      ${(window as any).__VERSION__ || 'dev'}
+      Build: ${esc(buildId)} · Version: ${versionHtml}
     </div>
   </div>`;
 }

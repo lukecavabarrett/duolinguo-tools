@@ -530,7 +530,9 @@ def render_html(
     course_json: str,
     vocab_json: str,
     cluster_json: str,
-    version_tag: str,
+    build_tag: str,
+    source_version: str,
+    source_version_url: str,
     pwa: bool,
     embed_vocab: bool,
 ) -> str:
@@ -556,10 +558,32 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     output = output.replace("COURSE_DATA_PLACEHOLDER", course_json)
     output = output.replace("VOCAB_DATA_PLACEHOLDER", vocab_json if embed_vocab else "null")
     output = output.replace("CLUSTER_DATA_PLACEHOLDER", cluster_json)
-    output = output.replace("GIT_VERSION_PLACEHOLDER", version_tag)
+    output = output.replace("BUILD_VERSION_PLACEHOLDER", build_tag)
+    output = output.replace("SOURCE_VERSION_PLACEHOLDER", source_version)
+    output = output.replace("SOURCE_VERSION_URL_PLACEHOLDER", source_version_url)
     output = output.replace("PWA_HEAD_PLACEHOLDER", pwa_head)
     output = output.replace("PWA_BOOTSTRAP_PLACEHOLDER", pwa_bootstrap)
     return output
+
+
+def git_output(*args: str) -> str:
+    result = subprocess.run(["git", *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        return ""
+    return (result.stdout or "").strip()
+
+
+def github_revision_url(remote_url: str, commit_hash: str) -> str:
+    remote = remote_url.strip()
+    if not remote or not commit_hash:
+        return ""
+    if remote.endswith(".git"):
+        remote = remote[:-4]
+    if remote.startswith("git@github.com:"):
+        remote = "https://github.com/" + remote[len("git@github.com:"):]
+    if not remote.startswith("https://github.com/"):
+        return ""
+    return f"{remote}/tree/{commit_hash}"
 
 
 def build_manifest(course: dict) -> str:
@@ -788,6 +812,9 @@ def main() -> None:
         separators=(",", ":"),
     )
     app_version = fingerprint(course_id, app_js, vocab_json, cluster_json, version_course_json, length=7)
+    git_full = git_output("rev-parse", "HEAD")
+    git_short = git_output("rev-parse", "--short=7", "HEAD") or "unknown"
+    git_commit_url = github_revision_url(git_output("remote", "get-url", "origin"), git_full)
 
     built_paths: list[Path] = []
 
@@ -800,7 +827,9 @@ def main() -> None:
             course_json=standalone_course_json,
             vocab_json=vocab_json,
             cluster_json=cluster_json,
-            version_tag=app_version,
+            build_tag=app_version,
+            source_version=git_short,
+            source_version_url=git_commit_url,
             pwa=False,
             embed_vocab=True,
         )
@@ -826,7 +855,9 @@ def main() -> None:
             course_json=site_course_json,
             vocab_json=vocab_json,
             cluster_json=cluster_json,
-            version_tag=app_version,
+            build_tag=app_version,
+            source_version=git_short,
+            source_version_url=git_commit_url,
             pwa=True,
             embed_vocab=False,
         )
@@ -848,7 +879,7 @@ def main() -> None:
     total = time.time() - t0
     rel_paths = ", ".join(str(path.relative_to(ROOT)) for path in built_paths)
     print(f"\nBuilt {rel_paths}")
-    print(f"Version: {app_version}")
+    print(f"Build: {app_version}, Version: {git_short}")
     print(f"JS: {app_kb:.1f} KB, packed vocab: {size_kb:.0f} KB, target: {args.target}")
     print(f"Words: {len(vocab['words'])}, Skills: {len(vocab['skills'])}, Course: {course_id}")
     print(f"Total: {total:.2f}s")

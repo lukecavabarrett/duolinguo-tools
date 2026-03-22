@@ -258,6 +258,12 @@
       color: var(--dim);
       margin-top: 2rem;
     }
+    .app-info a {
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .app-info a:hover { text-decoration: underline }
 
     /* ── Profile Screen ── */
     .logo-wrap { text-align: center; margin-bottom: 1.5rem }
@@ -913,7 +919,11 @@
 <script id="cluster-data" type="application/json">CLUSTER_DATA_PLACEHOLDER</script>
 <script id="course-data" type="application/json">COURSE_DATA_PLACEHOLDER</script>
 
-<script>window.__VERSION__="GIT_VERSION_PLACEHOLDER";</script>
+<script>
+window.__BUILD__="BUILD_VERSION_PLACEHOLDER";
+window.__VERSION__="SOURCE_VERSION_PLACEHOLDER";
+window.__VERSION_URL__="SOURCE_VERSION_URL_PLACEHOLDER";
+</script>
 <script>APP_JS_PLACEHOLDER</script>
 PWA_BOOTSTRAP_PLACEHOLDER
 </body>
