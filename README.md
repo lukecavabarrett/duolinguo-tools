@@ -177,6 +177,8 @@ This naturally handles edge cases:
 - **Node 24** — align local development and GitHub Actions on Node 24
 - **`en-it` course** — add an Italian course as another explicit published course
 - **App size info** — split the current size box into shell size vs vocab size vs saved data, instead of a misleading single number
+- **Build output clarity** — make the build script report whether scrape/build inputs were reused from cache or freshly generated
+- **Course chooser flags** — show the source-language flag as a small corner badge on the target-language flag
 - **Session mix heuristic** — rethink the current “new words get at most 50% of the remaining slots” rule
 - **PWA update versioning** — avoid forcing full app-shell refreshes for docs-only or other non-app changes
 - **Kanji practice** - maybe we should be able to have kanji<->kana exercises - and distractors should be based on kana similarity
