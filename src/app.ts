@@ -196,10 +196,6 @@ function allSourceAnswers(card: Word): string[] {
   return normalizeAliases(card.from.text, card.from.aliases || []);
 }
 
-function capitalizeAnswer(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
-
 function directionLabel(direction: Direction, compact = false): string {
   const from = compact ? COURSE.labels.fromShort : COURSE.labels.from;
   const to = compact ? COURSE.labels.toShort : COURSE.labels.to;
@@ -914,7 +910,7 @@ function cardTop() {
     // Audio-only: large speaker, no text
     mainWordHtml = '';
   } else if (isReverse) {
-    mainWordHtml = esc(capitalizeAnswer(primarySourceAnswer(card)));
+    mainWordHtml = esc(primarySourceAnswer(card));
   } else {
     mainWordHtml = TARGET_PACK.renderTarget(card);
   }
@@ -1021,7 +1017,7 @@ function tplChoices() {
         if (opt === correctAnswer) cls += S.selectedChoice === i ? ' choice-correct' : ' choice-missed';
         else if (i === S.selectedChoice) cls += ' choice-wrong';
       }
-      const display = !isReverse ? capitalizeAnswer(opt) : opt;
+      const display = opt;
       return `<button class="${cls}" data-idx="${i}" ${S.answered ? 'disabled' : ''}>
         ${esc(display)}
       </button>`;
