@@ -17,6 +17,17 @@ const TARGET_PACK = getTargetPack(COURSE.targetPack);
 //  DATA LOADING
 // ══════════════════════════════════════════════════════
 let DATA: VocabData = { skills: [], words: [] };
+let VOCAB_BYTES = 0;
+
+function byteLength(text: string): number {
+  return new TextEncoder().encode(text).length;
+}
+
+function shellBytes(): number {
+  const totalBytes = byteLength(document.documentElement.outerHTML);
+  const embedded = document.getElementById('vocab-data')?.textContent || '';
+  return Math.max(0, totalBytes - byteLength(embedded));
+}
 
 function normalizeAliases(primary: string, aliases?: string[]): string[] {
   const seen = new Set<string>();
@@ -133,13 +144,20 @@ function parseVocabData(parsed: any): VocabData {
   const el = document.getElementById('vocab-data');
   if (el) {
     try {
-      const parsed = JSON.parse(el.textContent);
+      const raw = el.textContent || '';
+      VOCAB_BYTES = byteLength(raw);
+      const parsed = JSON.parse(raw);
       if (parsed && parsed.skills) { DATA = parseVocabData(parsed); return; }
     } catch(e) {}
   }
   fetch(COURSE.fetchPath)
-    .then(r => r.json())
-    .then(d => { DATA = parseVocabData(d); render(); })
+    .then(r => r.text())
+    .then(raw => {
+      VOCAB_BYTES = byteLength(raw);
+      const d = JSON.parse(raw);
+      DATA = parseVocabData(d);
+      render();
+    })
     .catch(() => console.warn('No vocab data found'));
 })();
 
@@ -752,8 +770,9 @@ function tplSettings() {
   let lsBytes = 0;
   try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k) lsBytes += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch(e) {}
   const lsKB = (lsBytes / 1024).toFixed(1);
-  const appSize = document.documentElement.outerHTML.length;
-  const appKB = (appSize / 1024).toFixed(0);
+  const shellKB = (shellBytes() / 1024).toFixed(0);
+  const vocabKB = (VOCAB_BYTES / 1024).toFixed(0);
+  const totalKB = ((shellBytes() + VOCAB_BYTES) / 1024).toFixed(0);
   const tog = (key: string, on: boolean) => `<div class="toggle-switch${on ? ' on' : ''}" data-toggle="${key}"></div>`;
   return `<div class="screen anim">
     <div class="settings-header">
@@ -811,7 +830,8 @@ function tplSettings() {
 
     <div class="app-info">
       ${wordCount} words · ${skillCount} skills<br>
-      App size: ${appKB} KB · Saved data: ${lsKB} KB<br>
+      Shell: ${shellKB} KB · Vocab: ${vocabKB} KB<br>
+      Approx total: ${totalKB} KB · Saved data: ${lsKB} KB<br>
       ${(window as any).__VERSION__ || 'dev'}
     </div>
   </div>`;
