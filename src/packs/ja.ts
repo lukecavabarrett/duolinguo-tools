@@ -63,6 +63,23 @@ export const japaneseTargetPack: TargetPack = {
   id: 'ja',
   showTransliterationLabel: 'Show romaji by default',
   transliterationRevealHint: 'tap word for romaji',
+  getLeniencyToggles() {
+    return [
+      {
+        key: 'macronVowels',
+        label: 'Macron vowels',
+        description: 'ō → ou, ā → aa, ī → ii, ū → uu, ē → ee',
+      },
+      {
+        key: 'romajiVariants',
+        label: 'Romanization variants',
+        description: 'shi ↔ si, chi ↔ ti, tsu ↔ tu, fu ↔ hu, oo ↔ ou',
+      },
+    ];
+  },
+  getReverseTypePlaceholder(): string {
+    return 'Type the Japanese (romaji or kana)...';
+  },
   renderTarget(word: Word): string {
     return rubyWord(word.to.text, word.to.reading || '');
   },

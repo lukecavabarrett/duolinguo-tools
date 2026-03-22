@@ -764,7 +764,6 @@ function importSkillOpts(): string {
 
 function tplSettings() {
   const st = S.settings;
-  const showJapaneseLeniency = COURSE.targetPack === 'ja';
   const wordCount = DATA.words ? DATA.words.length : '?';
   const skillCount = DATA.skills ? DATA.skills.length : '?';
   let lsBytes = 0;
@@ -774,6 +773,11 @@ function tplSettings() {
   const vocabKB = (VOCAB_BYTES / 1024).toFixed(0);
   const totalKB = ((shellBytes() + VOCAB_BYTES) / 1024).toFixed(0);
   const tog = (key: string, on: boolean) => `<div class="toggle-switch${on ? ' on' : ''}" data-toggle="${key}"></div>`;
+  const extraLeniencyRows = TARGET_PACK.getLeniencyToggles().map(toggle => `
+      <div class="toggle-row">
+        <div><div class="toggle-label">${esc(toggle.label)}</div><div class="toggle-sub">${esc(toggle.description)}</div></div>
+        ${tog(toggle.key, st[toggle.key])}
+      </div>`).join('');
   return `<div class="screen anim">
     <div class="settings-header">
       <button class="settings-back" id="btn-settings-back">←</button>
@@ -786,14 +790,7 @@ function tplSettings() {
         <div><div class="toggle-label">Ignore hyphens & spaces</div><div class="toggle-sub">e.g. "ice cream" matches "icecream"</div></div>
         ${tog('ignoreHyphens', st.ignoreHyphens)}
       </div>
-      ${showJapaneseLeniency ? `<div class="toggle-row">
-        <div><div class="toggle-label">Macron vowels</div><div class="toggle-sub">ō → ou, ā → aa, ī → ii, ū → uu, ē → ee</div></div>
-        ${tog('macronVowels', st.macronVowels)}
-      </div>
-      <div class="toggle-row">
-        <div><div class="toggle-label">Romanization variants</div><div class="toggle-sub">shi ↔ si, chi ↔ ti, tsu ↔ tu, fu ↔ hu, oo ↔ ou</div></div>
-        ${tog('romajiVariants', st.romajiVariants)}
-      </div>` : ''}
+      ${extraLeniencyRows}
     </div>
 
     <div class="field">
@@ -923,7 +920,7 @@ function tplType() {
   const card = S.cards[S.idx];
   const isReverse = S.exerciseType.direction === 'from2to';
   const placeholder = isReverse
-    ? (COURSE.targetPack === 'ja' ? 'Type the Japanese (romaji or kana)...' : `Type the ${COURSE.labels.to}...`)
+    ? TARGET_PACK.getReverseTypePlaceholder(COURSE)
     : `Type the ${COURSE.labels.from} meaning...`;
   const inpCls = 'answer-input' + (S.answered ? (S.lastCorrect ? ' correct' : ' wrong') : '');
 
@@ -1294,20 +1291,9 @@ function recordAnswer(card: Word, ok: boolean): void {
   try { navigator.vibrate?.(ok ? 30 : [50, 30, 50]); } catch(e) {}
 }
 
-function fuzzyNorm(s: string): string {
+function normalizeSourceInput(s: string): string {
   let r = s.trim().toLowerCase().replace(/['']/g, "'").replace(/[.!?,;:]+$/, '');
-  const st = S.settings;
-  if (st.ignoreHyphens) r = r.replace(/[-\s]+/g, '');
-  if (st.macronVowels) r = r.replace(/ā/g,'a').replace(/ī/g,'i').replace(/ū/g,'u').replace(/ē/g,'e').replace(/ō/g,'o');
-  if (st.romajiVariants) {
-    r = r.replace(/sya/g,'sha').replace(/syu/g,'shu').replace(/syo/g,'sho');
-    r = r.replace(/tya/g,'cha').replace(/tyu/g,'chu').replace(/tyo/g,'cho');
-    r = r.replace(/zya/g,'ja').replace(/zyu/g,'ju').replace(/zyo/g,'jo');
-    r = r.replace(/\bsi\b|si(?=[aeiou])/g,'shi').replace(/\bti\b|ti(?=[aeiou])/g,'chi');
-    r = r.replace(/\btu\b|tu(?=[aeiou])/g,'tsu').replace(/\bhu\b|hu(?=[aeiou])/g,'fu');
-    r = r.replace(/\bzi\b|zi(?=[aeiou])/g,'ji');
-    r = r.replace(/oo/g, 'ou');
-  }
+  if (S.settings.ignoreHyphens) r = r.replace(/[-\s]+/g, '');
   return r;
 }
 
@@ -1323,8 +1309,8 @@ function submitType() {
     const input = TARGET_PACK.normalizeTargetInput(el.value, S.settings);
     ok = !!el.value.trim() && TARGET_PACK.getTargetAnswerSet(card, S.settings).has(input);
   } else {
-    const input = fuzzyNorm(el.value);
-    ok = !!el.value.trim() && allSourceAnswers(card).some(answer => fuzzyNorm(answer) === input || basicNorm(answer) === basicNorm(el.value));
+    const input = normalizeSourceInput(el.value);
+    ok = !!el.value.trim() && allSourceAnswers(card).some(answer => normalizeSourceInput(answer) === input || basicNorm(answer) === basicNorm(el.value));
   }
 
   S.currentAnswer = el.value;

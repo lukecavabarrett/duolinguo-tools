@@ -1,4 +1,4 @@
-import type { Settings, Word } from '../types';
+import type { CourseConfig, Settings, Word } from '../types';
 
 const esc = (s: unknown): string => String(s || '')
   .replace(/&/g, '&amp;')
@@ -14,6 +14,8 @@ export interface TargetPack {
   id: string;
   showTransliterationLabel: string;
   transliterationRevealHint: string;
+  getLeniencyToggles(): Array<{ key: keyof Settings; label: string; description: string }>;
+  getReverseTypePlaceholder(course: CourseConfig): string;
   renderTarget(word: Word): string;
   renderTargetProgress(word: Word): string;
   getTargetAnswerSet(word: Word, settings: Settings): Set<string>;
@@ -27,6 +29,12 @@ export const defaultTargetPack: TargetPack = {
   id: 'default',
   showTransliterationLabel: 'Show transliteration by default',
   transliterationRevealHint: 'tap word for transliteration',
+  getLeniencyToggles() {
+    return [];
+  },
+  getReverseTypePlaceholder(course: CourseConfig): string {
+    return `Type the ${course.labels.to}...`;
+  },
   renderTarget(word: Word): string {
     return esc(word.to.text);
   },
