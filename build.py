@@ -347,7 +347,7 @@ def hydrate_course_labels(course: dict, scrape_meta: dict, explicit: bool) -> di
         "title": f"{to_label} Flash",
         "brandTitle": to_label,
         "brandSubtitle": DEFAULT_BRAND_SUBTITLE,
-        "brandIcon": course["toLang"].upper(),
+        "brandIcon": course.get("brandIcon") or language_flag(course["toLang"]) or course["toLang"].upper(),
         "labels": {
             "from": from_label,
             "to": to_label,
@@ -664,9 +664,13 @@ def build_course_chooser_html(courses: list[dict]) -> str:
 
     cards = "\n".join(
         f"""      <a class="course-card" href="courses/{escape(course['courseId'])}/">
-        {chooser_icon(course)}
-        <div class="course-title">{escape(course['title'])}</div>
-        <div class="course-sub">{escape(course['labels']['from'])} → {escape(course['labels']['to'])}</div>
+        <div class="course-head">
+          {chooser_icon(course)}
+          <div class="course-meta">
+            <div class="course-title">{escape(course['brandTitle'])}</div>
+            <div class="course-sub">from {escape(course['labels']['from'])}</div>
+          </div>
+        </div>
       </a>"""
         for course in courses
     )
@@ -683,13 +687,15 @@ def build_course_chooser_html(courses: list[dict]) -> str:
     h1{{font-size:2rem;font-weight:800;margin-bottom:.5rem}}
     p{{color:#8BA5B0;margin-bottom:1.5rem}}
     .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}}
-    .course-card{{display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.25rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
+    .course-card{{display:block;background:#1B2B32;border:1px solid #2B4A56;border-radius:16px;padding:1.1rem 1.15rem;text-decoration:none;color:inherit;box-shadow:0 4px 0 rgba(0,0,0,.2)}}
     .course-card:hover{{transform:translateY(-1px)}}
-    .course-icon-wrap{{position:relative;width:3rem;height:3rem;margin-bottom:.75rem}}
-    .course-icon-main{{font-size:2.2rem;line-height:1}}
-    .course-icon-badge{{position:absolute;top:-.15rem;right:-.2rem;font-size:.95rem;line-height:1;background:#131F24;border:1px solid #2B4A56;border-radius:999px;padding:.08rem .16rem;box-shadow:0 2px 0 rgba(0,0,0,.2)}}
-    .course-title{{font-size:1.05rem;font-weight:800;margin-bottom:.25rem}}
-    .course-sub{{color:#8BA5B0;font-size:.92rem}}
+    .course-head{{display:flex;align-items:center;gap:.9rem;min-height:3.2rem}}
+    .course-icon-wrap{{position:relative;flex:0 0 3rem;width:3rem;height:3rem}}
+    .course-icon-main{{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:2.2rem;line-height:1}}
+    .course-icon-badge{{position:absolute;right:.15rem;bottom:.2rem;font-size:.9rem;line-height:1;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.35)}}
+    .course-meta{{min-width:0}}
+    .course-title{{font-size:1.08rem;font-weight:800;line-height:1.15;margin-bottom:.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+    .course-sub{{color:#8BA5B0;font-size:.88rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
   </style>
 </head>
 <body>
