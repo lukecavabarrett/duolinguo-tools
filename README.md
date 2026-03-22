@@ -1,11 +1,21 @@
 # duolinguo-tools
 
-A self-contained HTML flashcard app for studying Japanese vocabulary from Duolingo. No server, no build step required to use — just open `index.html` in any browser.
+A flashcard app builder for Duolingo vocabulary courses.
+
+The repo still ships the Japanese app as the reference product, but the build is now generic:
+
+```bash
+python3 build.py --from en --to ja --target all
+python3 build.py --from en --to es --target all
+```
+
+Course data is cached per pair under `data/courses/<course-id>/`, generated intermediates live under `build/courses/<course-id>/`, and deploy artifacts are emitted under `dist/`.
 
 ## Features
 
-- **2,325 words** across 221 skills, scraped from [duome.eu](https://duome.eu/vocabulary/en/ja/skills)
-- **Audio** from Duolingo's CDN for every word
+- **Reference Japanese course** with 2,325 words across 221 skills, scraped from [duome.eu](https://duome.eu/vocabulary/en/ja/skills)
+- **Generic cached Duome scrape flow** for other course pairs
+- **Audio** from Duolingo's CDN on demand
 - **Mixed exercise mode** (default) — exercise type varies per card based on familiarity:
   - JP → EN multiple choice
   - EN → JP multiple choice
@@ -21,21 +31,89 @@ A self-contained HTML flashcard app for studying Japanese vocabulary from Duolin
 - **"Can't listen now"** — skip audio exercises for the rest of the session
 - **Fuzzy typed answers** — romaji variants, macron vowels, and common romanization differences accepted
 - **Duolingo-style UI** — dark theme, green accents, raised buttons, sound effects
-- **Offline-capable** — everything embedded in a single HTML file
-- **Progress saved** in localStorage
+- **Two deploy modes**:
+  - standalone self-contained HTML
+  - served/PWA site for GitHub Pages-style hosting
+- **Per-course progress saved** in localStorage
 
 ## Usage
 
-Open `index.html` in any browser. That's it.
+- `index.html` at the repo root is the latest standalone build for the default course.
+- `dist/<course-id>/standalone.html` is the portable self-contained build for a specific course.
+- `dist/site/index.html` is the served course chooser for the GitHub Pages/PWA variant.
 
 ## Building from source
 
 ```bash
 npm install
-python3 build.py
+python3 build.py --from en --to ja --target all
 ```
 
-The build pipeline: enriches scraped vocab with kana readings (wanakana + kuroshiro), type-checks and bundles TypeScript, then embeds everything into `index.html`.
+Common commands:
+
+```bash
+python3 build.py --from en --to ja --target standalone
+python3 build.py --from en --to ja --target site
+python3 build.py --from en --to ja --target all
+python3 build.py --from en --to ja --target all --force
+```
+
+What the build does:
+- resolves a specialized course config from `courses/<course-id>.json`, or synthesizes a default config for generic pairs
+- reuses cached scraped vocab from `data/courses/<course-id>/scraped/vocab_data.json`
+- re-scrapes from Duome when `--force` is provided
+- runs build-time enrichment when the course needs it (`en-ja` adds kana)
+- type-checks and bundles the TypeScript app
+- emits standalone and/or served/PWA outputs
+
+Output layout:
+
+```text
+data/
+  courses/<course-id>/scraped/
+build/
+  courses/<course-id>/enriched/
+dist/
+  <course-id>/standalone.html
+  site/
+    index.html
+    courses/<course-id>/
+      index.html
+      vocab-data.json
+      course.json
+      manifest.webmanifest
+      icon.svg
+      service-worker.js
+```
+
+## Offline behavior
+
+### Standalone HTML
+
+- `dist/<course-id>/standalone.html` embeds the app shell, course config, clusters, and packed vocab data in one file.
+- This is the best fully portable artifact for desktop browsers and Android Chrome.
+- On iOS, opening a self-contained local HTML file is still not a reliable primary path.
+- Word audio is **not** mirrored into the file. When online, the app plays Duolingo CDN audio on demand. When offline, it falls back to browser/device TTS.
+
+### Served / GitHub Pages / PWA
+
+- `dist/site/index.html` is the root course chooser.
+- Each course lives at `dist/site/courses/<course-id>/`.
+- Each course page ships a service worker and manifest, so after the first online load it can work offline as an installed PWA or cached site.
+- Offline served usage caches the app shell and `vocab-data.json` for that course.
+- Duolingo CDN word audio is still fetched on demand when online; offline playback falls back to browser/device TTS.
+
+## Local storage
+
+- Progress is stored per course, not globally.
+- The Japanese reference course keeps the legacy `jf_*` keys for continuity.
+- Generic courses use a course-specific storage prefix, so progress for `en-ja` and `en-es` does not collide.
+
+## Course selection on the served site
+
+- The served build writes a root chooser page at `dist/site/index.html`.
+- That chooser links to each built course under `dist/site/courses/<course-id>/`.
+- In practice, for GitHub Pages you publish the contents of `dist/site/`.
 
 ## Progression algorithm
 
