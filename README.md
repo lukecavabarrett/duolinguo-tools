@@ -2,9 +2,10 @@
 
 A flashcard app builder for Duolingo vocabulary courses.
 
-The repo still ships the Japanese app as the reference product, but the build is now generic:
+The repo still ships Japanese as the reference course, but there is no default build artifact or default published course. Every build is explicit:
 
 ```bash
+python3 build.py --course en-ja --target all
 python3 build.py --from en --to ja --target all
 python3 build.py --from en --to es --target all
 ```
@@ -38,7 +39,6 @@ Course data is cached per pair under `data/courses/<course-id>/`, generated inte
 
 ## Usage
 
-- `index.html` at the repo root is the latest standalone build for the default course.
 - `dist/<course-id>/standalone.html` is the portable self-contained build for a specific course.
 - `dist/site/index.html` is the served course chooser for the GitHub Pages/PWA variant.
 
@@ -46,12 +46,15 @@ Course data is cached per pair under `data/courses/<course-id>/`, generated inte
 
 ```bash
 npm install
-python3 build.py --from en --to ja --target all
+python3 build.py --course en-ja --target all
 ```
 
 Common commands:
 
 ```bash
+python3 build.py --course en-ja --target standalone
+python3 build.py --course en-ja --target site
+python3 build.py --course en-ja --target all
 python3 build.py --from en --to ja --target standalone
 python3 build.py --from en --to ja --target site
 python3 build.py --from en --to ja --target all
@@ -114,6 +117,18 @@ dist/
 - The served build writes a root chooser page at `dist/site/index.html`.
 - That chooser links to each built course under `dist/site/courses/<course-id>/`.
 - In practice, for GitHub Pages you publish the contents of `dist/site/`.
+- The repo's Pages workflow builds all explicit course configs under `courses/*.json` and publishes the resulting chooser plus course folders.
+
+## GitHub Pages publishing
+
+- GitHub Pages should publish `dist/site/`, not the repo root.
+- The recommended setup is a GitHub Actions workflow that:
+  - installs Node and Python
+  - runs `python3 build.py --course <course-id> --target site` for each checked-in course config
+  - uploads `dist/site/` as the Pages artifact
+  - deploys that artifact with the official Pages actions
+- This means generated site files do not need to be committed to git.
+- Standalone builds remain local artifacts under `dist/<course-id>/standalone.html`.
 
 ## Progression algorithm
 

@@ -17,7 +17,6 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_COURSE_ID = "en-ja"
 DEFAULT_BRAND_SUBTITLE = "Duolingo Flashcards"
 DEFAULT_AUDIO_PREFIX = "https://d1vq87e9lcf771.cloudfront.net/"
 DEFAULT_SCRAPE_BEHAVIOR = "default"
@@ -44,13 +43,18 @@ def fail(result: subprocess.CompletedProcess[str]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--from", dest="from_lang", default="en", help="Source language code")
-    parser.add_argument("--to", dest="to_lang", default="ja", help="Target language code")
+    parser.add_argument("--from", dest="from_lang", help="Source language code")
+    parser.add_argument("--to", dest="to_lang", help="Target language code")
     parser.add_argument("--course", help="Override course id, e.g. en-ja")
     parser.add_argument("--target", choices=["standalone", "site", "all"], default="all", help="Build target")
     parser.add_argument("--force", action="store_true", help="Re-scrape vocab even if cached data exists")
     parser.add_argument("--output", help="Optional extra output path for the standalone HTML")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.course:
+        return args
+    if args.from_lang and args.to_lang:
+        return args
+    parser.error("Specify either --course <from-to> or both --from <lang> and --to <lang>.")
 
 
 def write_text(path: Path, text: str) -> Path:
@@ -718,10 +722,6 @@ def main() -> None:
             pwa=False,
             embed_vocab=True,
         )
-
-        root_output = ROOT / "index.html"
-        root_output.write_text(standalone_html, encoding="utf-8")
-        built_paths.append(root_output)
 
         standalone_path = write_text(ROOT / "dist" / course_id / "standalone.html", standalone_html)
         built_paths.append(standalone_path)
