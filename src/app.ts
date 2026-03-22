@@ -253,14 +253,14 @@ function shouldShowIosInstallHint(): boolean {
 
 function installCtaHtml(): string {
   if (INSTALL_AVAILABLE) {
-    return `<div class="field">
-      <div class="deck-info">Install this course for faster home-screen access and offline launch.</div>
-      <button class="btn btn-outline gap" id="btn-install">INSTALL APP</button>
+    return `<div class="install-cta">
+      <div class="install-cta-text">Install this course for faster home-screen access and offline launch.</div>
+      <button class="btn btn-outline" id="btn-install">INSTALL APP</button>
     </div>`;
   }
   if (shouldShowIosInstallHint()) {
-    return `<div class="field">
-      <div class="deck-info">On iPhone, use Share → Add to Home Screen for app-like offline access.</div>
+    return `<div class="install-cta">
+      <div class="install-cta-text">On iPhone, use Share → Add to Home Screen for app-like offline access.</div>
     </div>`;
   }
   return '';
@@ -794,8 +794,10 @@ function tplProfile() {
       }</div>
     </div>` : ''}
 
-    <button class="btn btn-green" id="btn-start">START</button>
-    <button class="btn btn-outline gap" id="btn-progress">View Progress</button>
+    <div class="home-actions">
+      <button class="btn btn-green" id="btn-start">START</button>
+      <button class="btn btn-outline" id="btn-progress">View Progress</button>
+    </div>
     ${installCtaHtml()}
     <p class="note">Progress saved locally on this device.</p>
   </div>`;
