@@ -169,6 +169,13 @@ This naturally handles edge cases:
 - ~~**Feedback**~~ ✓ — Duolingo 5-correct-answers sound + streak banner animation
 - ~~**Fonts**~~ ✓ - when selecting among jp options, use a nicer font
 - ~~**Skill progression**~~ ✓ - change formula to compute skill percentage to make it more gradual
+- **Install prompts** — make the served/PWA app more explicitly installable and suggest installation when appropriate
+- **Generic/runtime cleanup** — remove remaining JP-specific behavior from generic app code, such as hardcoded typing leniency toggles
+- **Node 24** — align local development and GitHub Actions on Node 24
+- **`en-it` course** — add an Italian course as another explicit published course
+- **App size info** — split the current size box into shell size vs vocab size vs saved data, instead of a misleading single number
+- **Session mix heuristic** — rethink the current “new words get at most 50% of the remaining slots” rule
+- **PWA update versioning** — avoid forcing full app-shell refreshes for docs-only or other non-app changes
 - **Kanji practice** - maybe we should be able to have kanji<->kana exercises - and distractors should be based on kana similarity
 - **Multilingual** - This feature is large and for the future. Separate in this repo what is language agnostic and what is language specific, and make it so we can build the app specifying two languages (native, learn). Then for each learned language, we will have some modules that handle special stuff (jp is a good example because it has a lot of special behaviour). This is really not needed, and mostly just a flex - we should do this only if it does not hinder the jp usage.
 
